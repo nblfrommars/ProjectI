@@ -41,7 +41,7 @@ const AppRoutes = () => {
             </PrivateRoute>
           }
         />
-        <Route path="/register" element={<Register />} />
+        <Route path="register" element={<Register />} />
       </Route>
 
       {/* Admin routes */}

@@ -1,53 +1,47 @@
-// File: src/utils/auth.js
-
 const MOCK_USERS_KEY = "mockUsers";
 const AUTH_USER_KEY = "user";
 
-// 🎯 Tài khoản ADMIN mặc định
+//tai khoan admin
 const DEFAULT_ADMIN_USER = {
   id: 999,
-  email: "admin@test.com", // 👈 Email/Username để đăng nhập
-  password: "admin", // 👈 Mật khẩu
-  role: "admin", // 👈 Vai trò: admin
+  email: "admin@test.com",
+  password: "admin",
+  role: "admin",
 };
 
 /**
- * Khởi tạo danh sách người dùng mock (bao gồm ADMIN mặc định)
- * @returns {Array} Danh sách người dùng
+ * Khoi tao danh sach nguoi dung
+ * @returns {Array} List nguoi dung
  */
 const getRegisteredUsers = () => {
   try {
     let users = localStorage.getItem(MOCK_USERS_KEY);
     users = users ? JSON.parse(users) : [];
 
-    // 🎯 LOGIC BỔ SUNG: Kiểm tra xem Admin có tồn tại chưa, nếu chưa thì thêm vào
+    // Kiem tra admin da ton tai chua, neu khong thi them
     const adminExists = users.some(
       (user) => user.email === DEFAULT_ADMIN_USER.email
     );
 
     if (!adminExists) {
       users.push(DEFAULT_ADMIN_USER);
-      // Lưu lại để admin luôn có sẵn cho các lần sau
+      //luu vao localStorage
       localStorage.setItem(MOCK_USERS_KEY, JSON.stringify(users));
     }
 
     return users;
   } catch (e) {
     console.error("Lỗi khi đọc mockUsers từ LocalStorage:", e);
-    return [DEFAULT_ADMIN_USER]; // Trả về Admin mặc định trong trường hợp lỗi
+    return [DEFAULT_ADMIN_USER];
   }
 };
 
-/**
- * Hàm Đăng nhập Mock: Kiểm tra người dùng và lưu trạng thái đăng nhập.
- * @param {object} credentials - Chứa { email, password }
- * @returns {object} { success: boolean, message?: string, role?: string }
- */
+//ham dang nhap mock
 export const login = ({ email, password }) => {
-  // Gọi hàm này để đảm bảo ADMIN mặc định được load
+  // Dam bao load admin
   const users = getRegisteredUsers();
 
-  // 1. Tìm người dùng khớp email và password
+  // Tim nguoi dung
   const foundUser = users.find(
     (user) => user.email === email && user.password === password
   );
@@ -56,7 +50,7 @@ export const login = ({ email, password }) => {
     return { success: false, message: "Email hoặc mật khẩu không đúng." };
   }
 
-  // 2. Đăng nhập thành công: Lưu thông tin cần thiết vào LocalStorage
+  // dang nhap thanh cong thi luu vao local storage
   localStorage.setItem(
     AUTH_USER_KEY,
     JSON.stringify({
@@ -65,19 +59,16 @@ export const login = ({ email, password }) => {
     })
   );
 
-  // 3. Trả về kết quả để Login.jsx điều hướng
+  // Tra ket qua de dieu huong
   return { success: true, role: foundUser.role };
 };
 
-/**
- * Hàm Đăng ký Mock: Lưu người dùng mới vào LocalStorage.
- * ... (Phần code register giữ nguyên) ...
- */
+//mock tao nguoi dung
 export const register = ({ email, password }) => {
-  // Vẫn gọi getRegisteredUsers để đảm bảo danh sách được load
+  // Goi de dam bao danh sach nguoi dung da duoc load
   const users = getRegisteredUsers();
 
-  // Kiểm tra email đã tồn tại chưa
+  // Kiem tra email ton tai chua
   const userExists = users.some((user) => user.email === email);
   if (userExists) {
     return {
@@ -100,10 +91,9 @@ export const register = ({ email, password }) => {
 };
 
 /**
- * Hàm đăng xuất
+ * Ham dang xuat
  */
 export const logout = () => {
-  // Xóa trạng thái đăng nhập
+  // xoa dang nhap di
   localStorage.removeItem(AUTH_USER_KEY);
-  // Lưu ý: Không xóa MOCK_USERS_KEY để các tài khoản đã đăng ký vẫn còn
 };

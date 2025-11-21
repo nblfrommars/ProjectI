@@ -1,5 +1,8 @@
+// UserLayout.jsx
 import React from "react";
 import { Outlet, useNavigate } from "react-router-dom";
+import Header from "../components/Header";
+import Footer from "../components/Footer";
 
 const UserLayout = () => {
   const navigate = useNavigate();
@@ -12,18 +15,14 @@ const UserLayout = () => {
 
   return (
     <div>
-      <header style={{ display: "flex", justifyContent: "space-between" }}>
-        <h2>User Layout</h2>
-        {user ? (
-          <button onClick={handleLogout}>Logout</button>
-        ) : (
-          <button onClick={() => navigate("/login")}>Login</button>
-        )}
-      </header>
+      {/* Header co the nhan props user va handle Logout*/}
+      <Header user={user} onLogout={handleLogout} />
 
-      <main>
+      <main style={{ minHeight: "80vh", padding: "1rem" }}>
         <Outlet />
       </main>
+
+      <Footer />
     </div>
   );
 };
