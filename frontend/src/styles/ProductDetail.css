@@ -1,0 +1,104 @@
+.product-detail-container {
+  max-width: 1000px;
+  margin: 40px auto;
+  padding: 20px;
+}
+
+.product-detail-horizontal {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+.product-detail-image {
+  flex: 1 1 500px;
+}
+
+.product-detail-image img {
+  width: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.product-detail-info {
+  flex: 1 1 450px;
+  display: flex;
+  flex-direction: column;
+}
+
+.product-detail-info h2 {
+  margin-bottom: 15px;
+  font-size: 28px;
+  color: #270296;
+}
+
+.product-detail-info .description {
+  margin-bottom: 15px;
+  color: #555;
+  line-height: 1.5;
+}
+
+.product-detail-info .price {
+  font-size: 22px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  color: #9a4185;
+}
+
+.size-selector {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.size-btn {
+  padding: 8px 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: white;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.2s;
+}
+
+.size-btn:hover {
+  background-color: #f8d4f3;
+}
+
+.size-btn.selected {
+  background-color: #fa75db;
+  color: white;
+  border-color: #9a4185;
+}
+
+.add-to-cart {
+  padding: 12px 25px;
+  background-color: #d36bbb;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  transition: background 0.2s;
+}
+
+.add-to-cart:hover {
+  background-color: #fa75db;
+}
+
+/* Responsive: màn hình nhỏ (<768px) */
+@media (max-width: 768px) {
+  .product-detail-horizontal {
+    flex-direction: column;
+  }
+
+  .product-detail-image,
+  .product-detail-info {
+    flex: 1 1 100%;
+  }
+}

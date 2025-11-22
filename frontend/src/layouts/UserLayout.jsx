@@ -3,6 +3,7 @@ import React from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import Navbar from "../components/Navbar";
 
 const UserLayout = () => {
   const navigate = useNavigate();
@@ -15,8 +16,9 @@ const UserLayout = () => {
 
   return (
     <div>
-      {/* Header co the nhan props user va handle Logout*/}
       <Header user={user} onLogout={handleLogout} />
+
+      <Navbar />
 
       <main style={{ minHeight: "80vh", padding: "1rem" }}>
         <Outlet />

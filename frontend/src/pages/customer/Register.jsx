@@ -1,9 +1,7 @@
-// File: src/pages/customer/Register.jsx
-
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-// 💡 Import hàm register từ file utils/auth.js
 import { register } from "../../utils/auth";
+import "../../styles/Register.css";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -16,8 +14,9 @@ const Register = () => {
 
   const handleRegister = (e) => {
     e.preventDefault();
-    setError(""); // Xóa lỗi cũ // --- 1. Kiểm tra xác thực cơ bản ---
+    setError("");
 
+    // Kiem tra mat khau
     if (password !== confirmPassword) {
       setError("Mật khẩu xác nhận không khớp.");
       return;
@@ -27,103 +26,68 @@ const Register = () => {
       return;
     }
 
-    setIsSubmitting(true); // --- 2. Gọi hàm register (Mock bằng LocalStorage) ---
+    setIsSubmitting(true);
 
     const result = register({ email, password });
 
-    setIsSubmitting(false); // --- 3. Xử lý kết quả ---
+    setIsSubmitting(false);
 
     if (result.success) {
-      alert(result.message); // Thông báo Đăng ký thành công
-      navigate("/login"); // Chuyển hướng đến trang Đăng nhập
+      alert(result.message);
+      navigate("/login");
     } else {
-      setError(result.message); // Hiển thị lỗi (ví dụ: Email đã tồn tại)
+      setError(result.message);
     }
   };
 
   return (
-    <div
-      style={{
-        maxWidth: "400px",
-        margin: "40px auto",
-        padding: "20px",
-        border: "1px solid #ccc",
-        borderRadius: "5px",
-      }}
-    >
-            <h2>Đăng ký Tài khoản</h2>     {" "}
+    <div className="register-container">
+      <h2 className="register-title">Đăng ký Tài khoản</h2>
+
       <form onSubmit={handleRegister}>
-                {/* Input Email */}
-               {" "}
         <input
           type="email"
+          className="register-input"
           placeholder="Email..."
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          style={inputStyle}
         />
-                {/* Input Mật khẩu */}
-               {" "}
+
         <input
           type="password"
+          className="register-input"
           placeholder="Mật khẩu..."
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          style={inputStyle}
         />
-                {/* Input Xác nhận Mật khẩu */}
-               {" "}
+
         <input
           type="password"
+          className="register-input"
           placeholder="Xác nhận Mật khẩu..."
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
           required
-          style={inputStyle}
         />
-                {/* Hiển thị Lỗi */}       {" "}
-        {error && (
-          <div style={{ marginBottom: 10, color: "red", fontWeight: "bold" }}>
-            {error}
-          </div>
-        )}
-                {/* Nút Đăng ký */}       {" "}
-        <button type="submit" disabled={isSubmitting} style={buttonStyle}>
-                    {isSubmitting ? "Đang xử lý..." : "Đăng ký"}       {" "}
+
+        {error && <div className="register-error">{error}</div>}
+
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="register-button"
+        >
+          {isSubmitting ? "Đang xử lý..." : "Đăng ký"}
         </button>
-        {/* Link chuyển về Đăng nhập */}
-        <p style={{ marginTop: "15px", textAlign: "center" }}>
+
+        <p className="register-login-link">
           Đã có tài khoản? <Link to="/login">Đăng nhập</Link>
         </p>
-             {" "}
       </form>
-         {" "}
     </div>
   );
-};
-
-// Định nghĩa style cho input và button để code dễ đọc hơn
-const inputStyle = {
-  display: "block",
-  width: "100%",
-  padding: 10,
-  marginBottom: 15,
-  border: "1px solid #ddd",
-  borderRadius: "4px",
-  boxSizing: "border-box",
-};
-
-const buttonStyle = {
-  width: "100%",
-  padding: 12,
-  background: "#007bff",
-  color: "white",
-  border: "none",
-  borderRadius: "4px",
-  cursor: "pointer",
-  fontWeight: "bold",
 };
 
 export default Register;

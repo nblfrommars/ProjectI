@@ -1,6 +1,6 @@
 import React from "react";
 import { BrowserRouter } from "react-router-dom";
-import AppRoutes from "./routes/AppRoutes"; // chắc chắn đường dẫn đúng
+import AppRoutes from "./routes/AppRoutes";
 
 function App() {
   return (
