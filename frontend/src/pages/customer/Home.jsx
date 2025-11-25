@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import productsData from "../../mockdata/products";
 import ProductCard from "../../components/ProductCard";
 import "../../styles/Home.css";
-import HomeLogo from "../../assets/HomeLogo.jpg";
+import HomeLogo from "../../assets/HomeLogo.png";
 const Home = () => {
   const [products] = useState(productsData);
 
@@ -20,7 +20,6 @@ const Home = () => {
             margin: "0 10px",
           }}
         />
-        <h1>Enjoy Your Glorious Days with Gloway</h1>
       </div>
 
       {/* san pham moi */}
