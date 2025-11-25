@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import products from "../../mockdata/products";
 import "../../styles/ProductDetail.css";
+import { addToCart } from "../../utils/cartStorage";
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -18,7 +19,17 @@ const ProductDetail = () => {
       navigate("/login");
       return;
     }
-    alert(`Added ${product.name}, size ${size} to cart!`);
+
+    addToCart({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.image,
+      size: size,
+      qty: 1,
+    });
+
+    alert(`Đã thêm ${product.name} (size ${size}) vào giỏ!`);
   };
 
   return (

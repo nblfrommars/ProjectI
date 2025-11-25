@@ -1,4 +1,3 @@
-import React from "react";
 import Logo from "../assets/images.png";
 import shopIcon from "../assets/shop.jpg";
 import cartIcon from "../assets/shopping-cart.jpg";
