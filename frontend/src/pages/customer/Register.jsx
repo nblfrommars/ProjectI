@@ -48,7 +48,7 @@ const Register = () => {
         <input
           type="email"
           className="register-input"
-          placeholder="Email..."
+          placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
@@ -57,7 +57,7 @@ const Register = () => {
         <input
           type="password"
           className="register-input"
-          placeholder="Mật khẩu..."
+          placeholder="Mật khẩu"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
@@ -66,7 +66,7 @@ const Register = () => {
         <input
           type="password"
           className="register-input"
-          placeholder="Xác nhận Mật khẩu..."
+          placeholder="Xác nhận Mật khẩu"
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
           required
@@ -79,7 +79,7 @@ const Register = () => {
           disabled={isSubmitting}
           className="register-button"
         >
-          {isSubmitting ? "Đang xử lý..." : "Đăng ký"}
+          {isSubmitting ? "Đang xử lý~~~" : "Đăng ký"}
         </button>
 
         <p className="register-login-link">

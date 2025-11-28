@@ -1,0 +1,123 @@
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: #fff;
+  padding: 25px 30px;
+  border-radius: 10px;
+  width: 450px;
+  max-width: 90%;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  font-family: Arial, sans-serif;
+}
+
+.modal-content h3 {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 22px;
+  font-weight: 600;
+  color: #333;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  font-weight: 500;
+  margin-bottom: 5px;
+  color: #555;
+}
+
+.form-group input,
+.form-group textarea {
+  padding: 8px 12px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  outline: none;
+  transition: 0.2s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  border-color: #1a73e8;
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+  align-items: center;
+}
+
+.delete-btn {
+  background: #d93025;
+  color: #fff;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.delete-btn:hover {
+  background: #b52b1f;
+}
+
+.right-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.save-btn {
+  background: #1a73e8;
+  color: #fff;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.save-btn:hover {
+  background: #0f5dc1;
+}
+
+.cancel-btn {
+  background: #f1f1f1;
+  color: #333;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.cancel-btn:hover {
+  background: #e0e0e0;
+}
+
+@media (max-width: 500px) {
+  .modal-content {
+    width: 90%;
+    padding: 20px;
+  }
+}

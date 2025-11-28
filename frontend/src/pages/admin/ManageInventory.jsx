@@ -1,0 +1,95 @@
+import React, { useState } from "react";
+import ProductFormModal from "./ProductFormModal";
+import products from "../../mockdata/products";
+import "../../styles/ManageInventory.css";
+export default function ManageInventory() {
+  const [inventory, setInventory] = useState(products);
+  const [editingProduct, setEditingProduct] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+
+  const updateStock = (id, newStock) => {
+    setInventory((prev) =>
+      prev.map((p) => (p.id === id ? { ...p, stock: newStock } : p))
+    );
+  };
+
+  const saveProduct = (product) => {
+    if (product.id) {
+      setInventory((prev) =>
+        prev.map((p) => (p.id === product.id ? product : p))
+      );
+    } else {
+      const newProduct = {
+        ...product,
+        id: Date.now(),
+      };
+      setInventory((prev) => [...prev, newProduct]);
+    }
+    setModalOpen(false);
+  };
+
+  return (
+    <div>
+      <h2>Inventory Management</h2>
+
+      <button
+        className="add-btn"
+        onClick={() => {
+          setEditingProduct(null);
+          setModalOpen(true);
+        }}
+      >
+        + Add Product
+      </button>
+
+      <table className="admin-table">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Stock</th>
+            <th>Adjust</th>
+            <th>Edit Product Info</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {inventory.map((item) => (
+            <tr key={item.id}>
+              <td>{item.name}</td>
+
+              <td>{item.stock}</td>
+
+              <td>
+                <button onClick={() => updateStock(item.id, item.stock + 1)}>
+                  +
+                </button>
+                <button onClick={() => updateStock(item.id, item.stock - 1)}>
+                  -
+                </button>
+              </td>
+
+              <td>
+                <button
+                  onClick={() => {
+                    setEditingProduct(item);
+                    setModalOpen(true);
+                  }}
+                >
+                  Edit Product Info
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      {modalOpen && (
+        <ProductFormModal
+          initialData={editingProduct}
+          onClose={() => setModalOpen(false)}
+          onSave={saveProduct}
+        />
+      )}
+    </div>
+  );
+}

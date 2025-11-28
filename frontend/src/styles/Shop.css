@@ -1,0 +1,14 @@
+.shop-container {
+  display: flex;
+  padding: 20px;
+  gap: 20px;
+  background: #f7f7f7;
+  min-height: 100vh;
+}
+
+.product-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+}

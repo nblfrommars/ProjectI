@@ -4,7 +4,7 @@ const AUTH_USER_KEY = "user";
 //tai khoan admin
 const DEFAULT_ADMIN_USER = {
   id: 999,
-  email: "admin@test.com",
+  email: "adminbaolinh@.com",
   password: "admin",
   role: "admin",
 };

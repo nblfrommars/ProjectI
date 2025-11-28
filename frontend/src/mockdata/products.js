@@ -11,6 +11,8 @@ const products = [
     image: blueShirt,
     description:
       "Áo sơ mi xanh biển đẹp và sang chảnh, phù hợp với các quý ông lịch lãm và cá tính",
+    stock: 100,
+    categoryId: 1,
   },
   {
     id: 2,
@@ -19,6 +21,8 @@ const products = [
     image: greenDress,
     description:
       " Váy form rộng, tạo độ nữ tính và xinh đẹp bồng bềnh cho các nàng",
+    stock: 200,
+    categoryId: 2,
   },
   {
     id: 3,
@@ -26,6 +30,8 @@ const products = [
     price: 1500000,
     image: jacket,
     description: "Phong cách Ulzzang, phù hợp cho các Kpop fan",
+    stock: 400,
+    categoryId: 1,
   },
   {
     id: 4,
@@ -34,6 +40,8 @@ const products = [
     image: miniSkirt,
     description:
       " Một chút quyến rũ và phá cách đến từ nhà tạo mẫu Huy Quang, hãy để mùa đông trở nên rực lửa cùng Gloway",
+    stock: 233,
+    categoryId: 2,
   },
   {
     id: 5,
@@ -42,6 +50,8 @@ const products = [
     image: sunDress,
     description:
       "Xinh đẹp và ngọt ngào như hoa mặt trời, hãy cùng Gloway đi giữa trời rực rỡ cùng siêu phẩm Sundress 2025 nhé!",
+    stock: 444,
+    categoryId: 2,
   },
 ];
 

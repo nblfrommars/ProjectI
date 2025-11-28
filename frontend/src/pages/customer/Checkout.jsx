@@ -28,7 +28,11 @@ const Checkout = ({ cart, clearCart }) => {
       return;
     }
 
-    alert("Đặt hàng COD thành công!");
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const email = user.email || "không xác định";
+
+    alert(`Đặt hàng thành công! Email xác nhận đã gửi đến: ${email}`);
+
     clearCart?.();
     navigate("/");
   };
