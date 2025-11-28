@@ -13,13 +13,17 @@ export default function ProductFormModal({
       category: "",
       price: "",
       description: "",
-      image: "",
+      image: null,
       stock: 0,
     }
   );
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleFileChange = (e) => {
+    setForm({ ...form, image: e.target.files[0] });
   };
 
   return (
@@ -56,8 +60,13 @@ export default function ProductFormModal({
         </div>
 
         <div className="form-group">
-          <label>Image URL</label>
-          <input name="image" value={form.image} onChange={handleChange} />
+          <label>Upload Image</label>
+          <input type="file" onChange={handleFileChange} />
+          {form.image && (
+            <p style={{ marginTop: "0.5rem" }}>
+              Selected file: {form.image.name}
+            </p>
+          )}
         </div>
 
         <div className="form-group">
@@ -71,7 +80,6 @@ export default function ProductFormModal({
         </div>
 
         <div className="modal-actions">
-          {/* Delete only appears when editing */}
           {initialData && (
             <button
               className="delete-btn"

@@ -5,18 +5,36 @@ import com.example.demo.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/auth")
+@CrossOrigin(origins = "*")
 public class AuthController {
 
     @Autowired
     private UserService userService;
 
-    @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody User user) {
-        return userService.login(user.getEmail(), user.getPw())
-                .map(u -> ResponseEntity.ok("Login successful"))
-                .orElse(ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials"));
+    @PostMapping("/register")
+    public ResponseEntity<?> register(@RequestBody User user) {
+        try {
+            User newUser = userService.register(user);
+            return ResponseEntity.ok(newUser);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(e.getMessage());
+        }
     }
+
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody User user) {
+        Optional<User> u = userService.login(user.getEmail(), user.getPw());
+        if (u.isPresent()) {
+            return ResponseEntity.ok(u.get());
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Email hoặc mật khẩu không đúng");
+        }
+    }
+
 }

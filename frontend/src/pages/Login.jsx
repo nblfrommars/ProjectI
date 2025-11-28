@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { login } from "../utils/auth";
 import "../styles/Login.css";
 
 const Login = () => {
@@ -10,20 +9,36 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
 
-    const result = login({ email, password });
+    try {
+      const res = await fetch("http://localhost:8080/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, pw: password }),
+      });
 
-    if (!result.success) {
-      setError(result.message);
-      return;
-    }
+      if (!res.ok) {
+        const text = await res.text();
+        setError(text || "Email hoặc mật khẩu không đúng");
+        return;
+      }
 
-    if (result.role === "admin") {
-      navigate("/admin");
-    } else {
-      navigate("/");
+      const data = await res.json();
+
+      //luu vao de giu cho cac component khac hoat dong
+      localStorage.setItem("user", JSON.stringify(data));
+
+      // dieu huong
+      if (data.role === "admin") {
+        navigate("/admin");
+      } else {
+        navigate("/");
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      setError("Không kết nối được server");
     }
   };
 

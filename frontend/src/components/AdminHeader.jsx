@@ -14,7 +14,7 @@ const AdminHeader = () => {
     <header
       style={{
         height: "60px",
-        backgroundColor: "#e560a9ff",
+        backgroundColor: "#251a45ff",
         color: "white",
         display: "flex",
         justifyContent: "space-between",

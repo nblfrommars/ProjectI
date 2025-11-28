@@ -3,7 +3,7 @@ const ShopSidebar = ({ categories, selectedCategory, setSelectedCategory }) => {
     <aside
       style={{
         width: "220px",
-        background: "#edacf7ff",
+        background: "#f197deff",
         padding: "20px",
         borderRadius: "8px",
       }}

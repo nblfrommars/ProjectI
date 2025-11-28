@@ -2,7 +2,7 @@ import blueShirt from "../assets/Blue shirt.jpg";
 import greenDress from "../assets/green dress.jpg";
 import jacket from "../assets/jacket.jpg";
 import miniSkirt from "../assets/miniskirt.jpg";
-import sunDress from "../assets/sun dress.jpg";
+import sunDress from "../assets/sundress xinh.jpg";
 const products = [
   {
     id: 1,

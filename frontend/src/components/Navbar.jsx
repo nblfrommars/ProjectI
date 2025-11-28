@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 
 const Navbar = () => {
   return (
@@ -13,38 +13,76 @@ const Navbar = () => {
         borderBottom: "1px solid #ccc",
       }}
     >
-      <Link
-        to="/"
-        style={{ textDecoration: "none", color: "#333", fontSize: "20px" }}
+      <NavLink
+        to="/home"
+        style={({ isActive }) => ({
+          textDecoration: "none",
+          color: "#333",
+          fontSize: "20px",
+          backgroundColor: isActive ? "#f56ae7ff" : "transparent",
+          padding: "0.2rem 0.5rem",
+          borderRadius: "5px",
+        })}
       >
         Home
-      </Link>
-      <Link
+      </NavLink>
+
+      <NavLink
         to="/shop"
-        style={{ textDecoration: "none", color: "#333", fontSize: "20px" }}
+        style={({ isActive }) => ({
+          textDecoration: "none",
+          color: "#333",
+          fontSize: "20px",
+          backgroundColor: isActive ? "#f56ae7ff" : "transparent",
+          padding: "0.2rem 0.5rem",
+          borderRadius: "5px",
+        })}
       >
         Shop
-      </Link>
-      <Link
+      </NavLink>
+
+      <NavLink
         to="/about"
-        style={{ textDecoration: "none", color: "#333", fontSize: "20px" }}
+        style={({ isActive }) => ({
+          textDecoration: "none",
+          color: "#333",
+          fontSize: "20px",
+          backgroundColor: isActive ? "#f56ae7ff" : "transparent",
+          padding: "0.2rem 0.5rem",
+          borderRadius: "5px",
+        })}
       >
-        About Us
-      </Link>
+        Specification
+      </NavLink>
+
       <a
         href="https://www.instagram.com"
         target="_blank"
         rel="noopener noreferrer"
-        style={{ textDecoration: "none", color: "#333", fontSize: "20px" }}
+        style={{
+          textDecoration: "none",
+          color: "#333",
+          fontSize: "20px",
+          padding: "0.2rem 0.5rem",
+          borderRadius: "5px",
+        }}
       >
         Our Instagram
       </a>
-      <Link
+
+      <NavLink
         to="/contact"
-        style={{ textDecoration: "none", color: "#333", fontSize: "20px" }}
+        style={({ isActive }) => ({
+          textDecoration: "none",
+          color: "#333",
+          fontSize: "20px",
+          backgroundColor: isActive ? "#f56ae7ff" : "transparent",
+          padding: "0.2rem 0.5rem",
+          borderRadius: "5px",
+        })}
       >
         Contact
-      </Link>
+      </NavLink>
     </nav>
   );
 };

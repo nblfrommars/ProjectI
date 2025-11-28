@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { register } from "../../utils/auth";
 import "../../styles/Register.css";
 
 const Register = () => {
@@ -12,11 +11,11 @@ const Register = () => {
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
     setError("");
 
-    // Kiem tra mat khau
+    // check trung lap mat khau
     if (password !== confirmPassword) {
       setError("Mật khẩu xác nhận không khớp.");
       return;
@@ -28,15 +27,29 @@ const Register = () => {
 
     setIsSubmitting(true);
 
-    const result = register({ email, password });
+    try {
+      const res = await fetch("http://localhost:8080/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, pw: password }),
+      });
 
-    setIsSubmitting(false);
+      if (!res.ok) {
+        const text = await res.text();
+        setError(text || "Đăng ký thất bại");
+        setIsSubmitting(false);
+        return;
+      }
 
-    if (result.success) {
-      alert(result.message);
+      const data = await res.json();
+
+      alert("Đăng ký thành công! Vui lòng đăng nhập.");
       navigate("/login");
-    } else {
-      setError(result.message);
+    } catch (err) {
+      console.error("Register error:", err);
+      setError("Không kết nối được server");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 

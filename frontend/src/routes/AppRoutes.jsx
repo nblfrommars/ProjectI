@@ -5,6 +5,7 @@ import UserLayout from "../layouts/UserLayout";
 import Home from "../pages/customer/Home";
 import Shop from "../pages/customer/Shop";
 import Cart from "../pages/customer/Cart";
+import Contact from "../pages/customer/Contact";
 import Checkout from "../pages/customer/Checkout";
 import ProductDetail from "../pages/customer/ProductDetail";
 import Register from "../pages/customer/Register";
@@ -23,8 +24,10 @@ const AppRoutes = () => {
       {/* User routes */}
       <Route path="/" element={<UserLayout />}>
         <Route index element={<Home />} />
+        <Route path="Home" element={<Home />} />
         <Route path="shop" element={<Shop />} />
         <Route path="product/:id" element={<ProductDetail />} />
+        <Route path="/contact" element={<Contact />} />
         <Route
           path="cart"
           element={
@@ -54,6 +57,7 @@ const AppRoutes = () => {
         }
       >
         <Route index element={<Dashboard />} />
+        <Route path="dashboard" element={<Dashboard />} />
         <Route path="finance" element={<Finance />} />
         <Route path="inventory" element={<ManageInventory />} />
         <Route path="orders" element={<ManageOrder />} />

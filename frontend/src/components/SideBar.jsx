@@ -2,7 +2,7 @@ import { NavLink } from "react-router-dom";
 
 const Sidebar = () => {
   const menu = [
-    { name: "Dashboard", path: "/admin" },
+    { name: "Dashboard", path: "/admin/dashboard" },
     { name: "Inventory", path: "/admin/inventory" },
     { name: "Orders", path: "/admin/orders" },
     { name: "Finance", path: "/admin/finance" },
@@ -12,7 +12,7 @@ const Sidebar = () => {
     <aside
       style={{
         width: "250px",
-        backgroundColor: "#f084bfff",
+        backgroundColor: "#262244ff",
         color: "white",
         display: "flex",
         flexDirection: "column",
