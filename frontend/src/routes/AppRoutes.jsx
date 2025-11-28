@@ -15,7 +15,8 @@ import ManageInventory from "../pages/admin/ManageInventory";
 import ManageOrder from "../pages/admin/ManageOrder";
 import Login from "../pages/Login";
 import PrivateRoute from "../components/PrivateRoute";
-
+import Specification from "../pages/customer/Specification";
+import OrderHistory from "../pages/customer/OrderHistory";
 const AppRoutes = () => {
   return (
     <Routes>
@@ -28,6 +29,7 @@ const AppRoutes = () => {
         <Route path="shop" element={<Shop />} />
         <Route path="product/:id" element={<ProductDetail />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/specification" element={<Specification />} />
         <Route
           path="cart"
           element={
@@ -41,6 +43,14 @@ const AppRoutes = () => {
           element={
             <PrivateRoute role="user">
               <Checkout />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="orders"
+          element={
+            <PrivateRoute role="user">
+              <OrderHistory />
             </PrivateRoute>
           }
         />

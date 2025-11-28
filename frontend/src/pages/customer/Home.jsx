@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import productsData from "../../mockdata/products";
 import ProductCard from "../../components/ProductCard";
 import "../../styles/Home.css";
-import HomeLogo from "../../assets/HomeLogo.png";
+import HomeLogo from "../../assets/HomeLogo.jpg";
 const Home = () => {
   const [products] = useState(productsData);
 
@@ -14,7 +14,7 @@ const Home = () => {
           src={HomeLogo}
           alt="Logo"
           style={{
-            width: "calc(100% - 20px)",
+            width: "calc(100% - 50px)",
             height: "auto",
             display: "block",
             margin: "0 10px",

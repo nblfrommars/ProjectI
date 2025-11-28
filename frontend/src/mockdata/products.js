@@ -3,6 +3,9 @@ import greenDress from "../assets/green dress.jpg";
 import jacket from "../assets/jacket.jpg";
 import miniSkirt from "../assets/miniskirt.jpg";
 import sunDress from "../assets/sundress xinh.jpg";
+import brownShoes from "../assets/brown shoes.jpg";
+import highHeels from "../assets/highheels.jpg";
+import neckLace from "../assets/neckLace.jpg";
 const products = [
   {
     id: 1,
@@ -52,6 +55,33 @@ const products = [
       "Xinh đẹp và ngọt ngào như hoa mặt trời, hãy cùng Gloway đi giữa trời rực rỡ cùng siêu phẩm Sundress 2025 nhé!",
     stock: 444,
     categoryId: 2,
+  },
+  {
+    id: 6,
+    name: "Giày da màu nâu sẫm",
+    price: 120000,
+    image: brownShoes,
+    description: "Giày da nâu sang trọng, thanh lịch cho các quý ông",
+    stock: 432,
+    categoryId: 3,
+  },
+  {
+    id: 7,
+    name: "Cao gót đỏ 10cm",
+    price: 1200000,
+    image: highHeels,
+    description: "Giày cao gót đỏ giúp hack chiều cao, xinh đẹp và trẻ trung",
+    stock: 42,
+    categoryId: 3,
+  },
+  {
+    id: 8,
+    name: "Vòng cổ cá tính mạ vàng",
+    price: 100000,
+    image: neckLace,
+    description: "Vòng cổ mặt chữ nhật xinh cho các nàng",
+    stock: 54,
+    categoryId: 4,
   },
 ];
 

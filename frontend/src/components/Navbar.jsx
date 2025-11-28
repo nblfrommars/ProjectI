@@ -42,7 +42,7 @@ const Navbar = () => {
       </NavLink>
 
       <NavLink
-        to="/about"
+        to="/specification"
         style={({ isActive }) => ({
           textDecoration: "none",
           color: "#333",

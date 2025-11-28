@@ -11,6 +11,7 @@ const Checkout = ({ cart, clearCart }) => {
   const [address, setAddress] = useState("");
   const [phone, setPhone] = useState("");
   const [note, setNote] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("cod"); // mac dinh thanh toan COD
 
   const totalPrice = safeCart.reduce((sum, item) => {
     const qty = Number(item.qty ?? item.quantity) || 0;
@@ -31,7 +32,9 @@ const Checkout = ({ cart, clearCart }) => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     const email = user.email || "không xác định";
 
-    alert(`Đặt hàng thành công! Email xác nhận đã gửi đến: ${email}`);
+    alert(
+      `Đặt hàng thành công! Email xác nhận đã gửi đến: ${email}\nPhương thức: ${paymentMethod.toUpperCase()}`
+    );
 
     clearCart?.();
     navigate("/");
@@ -90,6 +93,26 @@ const Checkout = ({ cart, clearCart }) => {
           value={note}
           onChange={(e) => setNote(e.target.value)}
         />
+        {/*chon thanh toan*/}
+        <div className="payment-section">
+          <h4>Chọn phương thức thanh toán</h4>
+          <div className="payment-buttons">
+            <button
+              type="button"
+              className={paymentMethod === "cod" ? "selected" : ""}
+              onClick={() => setPaymentMethod("cod")}
+            >
+              Thanh toán khi nhận hàng (COD)
+            </button>
+            <button
+              type="button"
+              className={paymentMethod === "momo" ? "selected" : ""}
+              onClick={() => setPaymentMethod("momo")}
+            >
+              Thanh toán online
+            </button>
+          </div>
+        </div>
 
         <button className="confirm-btn" onClick={handleConfirm}>
           Xác nhận đặt hàng
