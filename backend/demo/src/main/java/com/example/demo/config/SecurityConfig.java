@@ -13,7 +13,7 @@ public class SecurityConfig {
         http
             .csrf().disable()  
             .authorizeHttpRequests(auth -> auth
-                .anyRequest().permitAll()  //accept all reqs
+                .anyRequest().permitAll()  //accept all yeu cau gui den => test postman
             );
         return http.build();
     }
