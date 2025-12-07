@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import "../../styles/OrderHistory.css";
-
 const mockOrders = [
   {
     id: 1,
@@ -48,7 +47,7 @@ const statusColors = {
 const OrderHistory = () => {
   const [orders, setOrders] = useState([]);
   const [filterStatus, setFilterStatus] = useState("All");
-  const [sortOrder, setSortOrder] = useState("desc"); // mới nhất lên đầu
+  const [sortOrder, setSortOrder] = useState("desc"); //newest to oldest
 
   useEffect(() => {
     setOrders(mockOrders);
@@ -119,7 +118,10 @@ const OrderHistory = () => {
               ))}
             </div>
             <div className="order-total">
-              Total: {order.total.toLocaleString()}₫
+              <span>
+                <button>Feedback for Order</button>
+              </span>
+              <span>Total: {order.total.toLocaleString()}₫</span>
             </div>
           </div>
         ))

@@ -28,6 +28,13 @@ export default function ManageInventory() {
     setModalOpen(false);
   };
 
+  const deleteProduct = (id) => {
+    if (window.confirm("Are you sure you want to delete this product?")) {
+      setInventory((prev) => prev.filter((p) => p.id !== id));
+      setModalOpen(false);
+    }
+  };
+
   return (
     <div>
       <h2>Inventory Management</h2>
@@ -88,6 +95,7 @@ export default function ManageInventory() {
           initialData={editingProduct}
           onClose={() => setModalOpen(false)}
           onSave={saveProduct}
+          onDelete={deleteProduct}
         />
       )}
     </div>

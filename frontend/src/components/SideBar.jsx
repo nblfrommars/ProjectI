@@ -16,6 +16,7 @@ const Sidebar = () => {
         color: "white",
         display: "flex",
         flexDirection: "column",
+        position: "sticky",
       }}
     >
       <div

@@ -20,7 +20,7 @@
 }
 
 .add-btn {
-  background: #1a73e8;
+  background: #0c3b78;
   color: white;
   padding: 10px 18px;
   border: none;
@@ -36,7 +36,7 @@
 
 /* --- Table --- */
 .admin-table {
-  width: 90%;
+  width: 100%;
   border-collapse: collapse;
   background: white;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
@@ -106,12 +106,12 @@
 }
 
 .admin-table td button:nth-child(1) {
-  background-color: #1a73e8;
+  background-color: #0e3974;
   color: white;
 }
 
 .admin-table td button:nth-child(2) {
-  background-color: #d93025;
+  background-color: #ab4039;
   color: white;
 }
 
