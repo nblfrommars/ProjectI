@@ -12,6 +12,7 @@ const Sidebar = () => {
     <aside
       style={{
         width: "250px",
+        height: "100vh",
         backgroundColor: "#262244ff",
         color: "white",
         display: "flex",
