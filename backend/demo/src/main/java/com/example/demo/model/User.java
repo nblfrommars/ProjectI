@@ -8,6 +8,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.*;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.List;
+import java.util.ArrayList;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 @Entity
 @Table(name = "users")
 public class User {
@@ -38,6 +41,10 @@ public class User {
         this.role = role;
         this.createdAt = Timestamp.from(Instant.now());
     }
+
+    @OneToMany(mappedBy = "user")
+    @JsonManagedReference
+    private List<Order> orders = new ArrayList<>();
 
     // getter & setter
     public Integer getUserID() { return userID; }

@@ -45,4 +45,6 @@ public class Product{
     public void setStock(Integer stock) { this.stock = stock; }
     public Timestamp getCreated_at() { return created_at; }
     public void setCreated_at(Timestamp created_at) { this.created_at = created_at; }
+    public Product() {}
+    //chua viet khoi tao Product co thong tin
 }
