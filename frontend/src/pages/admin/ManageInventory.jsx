@@ -6,7 +6,7 @@ export default function ManageInventory() {
   const [inventory, setInventory] = useState(products);
   const [editingProduct, setEditingProduct] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
-
+  const [catModalOpen, setCatModalOpen] = useState(false);
   const updateStock = (id, newStock) => {
     setInventory((prev) =>
       prev.map((p) => (p.id === id ? { ...p, stock: newStock } : p))

@@ -32,5 +32,10 @@ public class Category {
     public List<Product> getProducts() { return products; }
     public void setProducts(List<Product> products) { this.products = products; }
 
-
+    //khoi tao
+    public Category(){}
+    public Category(String categoryName, String des){
+        this.categoryName = categoryName;
+        this.des = des;
+    }
 }

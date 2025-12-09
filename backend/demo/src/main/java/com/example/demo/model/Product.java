@@ -2,7 +2,7 @@ package com.example.demo.model;
 
 import jakarta.persistence.*;
 import java.sql.Timestamp;
-
+import java.time.Instant;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 @Entity
@@ -45,6 +45,17 @@ public class Product{
     public void setStock(Integer stock) { this.stock = stock; }
     public Timestamp getCreated_at() { return created_at; }
     public void setCreated_at(Timestamp created_at) { this.created_at = created_at; }
+    //constructor
     public Product() {}
-    //chua viet khoi tao Product co thong tin
+
+    public Product(String productName, Category category, Double price, String des,
+                   String image_url, Integer stock) {
+    this.productName = productName;
+    this.category = category;
+    this.price = price;
+    this.des = des;
+    this.image_url = image_url;
+    this.stock = stock;
+    this.created_at = Timestamp.from(Instant.now());
+}
 }
