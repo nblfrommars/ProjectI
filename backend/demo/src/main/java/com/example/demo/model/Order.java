@@ -1,47 +1,102 @@
 package com.example.demo.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
+
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-@Entity
-@Table(name="orders")
+import java.util.ArrayList;
+import java.util.List;
 
+@Entity
+@Table(name = "orders")
 public class Order {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "orderID")
     private Integer orderID;
 
+    //Mapping User
     @ManyToOne
-    @JoinColumn(name="userID",nullable = false)
-    @JsonBackReference
+    @JoinColumn(name = "userID", nullable = false)
+    @JsonBackReference("user_orders")
     private User user;
 
-    private BigDecimal total_price;
 
-    public enum orderStatus{
-    pending,
-    paid,
-    shipped,
-    cancelled
-}
+    @Column(name = "total_price", precision = 10, scale = 2)
+    private BigDecimal totalPrice;
+
+    //Order Status
+    public enum OrderStatus {
+        pending,
+        paid,
+        shipped,
+        cancelled
+    }
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private orderStatus status;
+    private OrderStatus status;
 
-    @Column(name="created_at")
-    private Timestamp created_at;
-    
-    public Order(){}
+    @Column(name = "created_at")
+    private Timestamp createdAt;
 
-//getters va setters
-    public Integer getOrderID() {return this.orderID;}
-    public orderStatus getOrderStatus() {return this.status;}
-    public void getOrderStatus(orderStatus status) {this.status = status;}
-    public BigDecimal getTotalPrice() {return this.total_price;}
+    //Mapping OrderItem
+    @OneToMany(mappedBy = "order")
+    @JsonManagedReference
+    private List<OrderItem> orderItems = new ArrayList<>();
+
+    //Constructors
+    public Order() {}
+
+    //Getters & Setters
+    public Integer getOrderID() {
+        return orderID;
+    }
+
+    public void setOrderID(Integer orderID) {
+        this.orderID = orderID;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public BigDecimal getTotalPrice() {
+        return totalPrice;
+    }
+
+    public void setTotalPrice(BigDecimal totalPrice) {
+        this.totalPrice = totalPrice;
+    }
+
+    public OrderStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(OrderStatus status) {
+        this.status = status;
+    }
+
+    public Timestamp getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Timestamp createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public List<OrderItem> getOrderItems() {
+        return orderItems;
+    }
+
+    public void setOrderItems(List<OrderItem> orderItems) {
+        this.orderItems = orderItems;
+    }
 }

@@ -3,8 +3,11 @@ package com.example.demo.model;
 import jakarta.persistence.*;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 @Entity
 @Table(name="products")
 public class Product{
@@ -26,9 +29,16 @@ public class Product{
     @Column(name="des", columnDefinition = "TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
     private String des;
     private String image_url;
-    private int stock;
+    private Integer stock;
     @Column(name="created_at")
     private Timestamp created_at;
+    @OneToMany(mappedBy = "product")
+@   JsonManagedReference("product-cart")
+    private List<Cart> carts = new ArrayList<>();
+
+    @OneToMany(mappedBy = "product")
+    @JsonManagedReference("product-order")
+    private List<OrderItem> orderItems = new ArrayList<>();
 //getters and setters
     public Integer getProductID() { return productID; }
     public String getProductName() { return productName; }

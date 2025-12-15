@@ -1,10 +1,5 @@
 package com.example.demo.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import jakarta.persistence.*;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -42,9 +37,14 @@ public class User {
         this.createdAt = Timestamp.from(Instant.now());
     }
 
+    //mapping order
     @OneToMany(mappedBy = "user")
-    @JsonManagedReference
+    @JsonManagedReference("user_orders")
     private List<Order> orders = new ArrayList<>();
+    //mapping cart
+    @OneToMany(mappedBy = "user")
+    @JsonManagedReference("user_cart")
+    private List<Cart> carts = new ArrayList<>();
 
     // getter & setter
     public Integer getUserID() { return userID; }
