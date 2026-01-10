@@ -61,9 +61,9 @@ const AppRoutes = () => {
       <Route
         path="/admin"
         element={
-          <PrivateRoute role="admin">
-            <AdminLayout />
-          </PrivateRoute>
+          //<PrivateRoute role="admin">
+          <AdminLayout /> //tam chinh de hoan thien fe
+          //</PrivateRoute>
         }
       >
         <Route index element={<Dashboard />} />

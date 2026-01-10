@@ -5,7 +5,6 @@ import com.example.demo.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -28,13 +27,13 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody User user) {
-        Optional<User> u = userService.login(user.getEmail(), user.getPw());
-        if (u.isPresent()) {
-            return ResponseEntity.ok(u.get());
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("Email hoặc mật khẩu không đúng");
-        }
+    try {
+        User u = userService.login(user.getEmail(), user.getPw());
+        return ResponseEntity.ok(u);
+    } catch (RuntimeException e) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body("Email hoặc mật khẩu không đúng");
     }
+}
 
 }

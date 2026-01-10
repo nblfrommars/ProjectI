@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import ProductFormModal from "./ProductFormModal";
 import products from "../../mockdata/products";
+import categories from "../../mockdata/categories";
 import "../../styles/ManageInventory.css";
 export default function ManageInventory() {
   const [inventory, setInventory] = useState(products);
@@ -34,6 +35,13 @@ export default function ManageInventory() {
       setModalOpen(false);
     }
   };
+  const inventoryWithCategory = inventory.map((item) => {
+    const category = categories.find((c) => c.id === item.categoryId);
+    return {
+      ...item,
+      categoryName: category ? category.name : "Unknown",
+    };
+  });
 
   return (
     <div>
@@ -53,6 +61,7 @@ export default function ManageInventory() {
         <thead>
           <tr>
             <th>Product</th>
+            <th>Category</th>
             <th>Stock</th>
             <th>Adjust</th>
             <th>Edit Product Info</th>
@@ -60,10 +69,10 @@ export default function ManageInventory() {
         </thead>
 
         <tbody>
-          {inventory.map((item) => (
+          {inventoryWithCategory.map((item) => (
             <tr key={item.id}>
               <td>{item.name}</td>
-
+              <td>{item.categoryName}</td>
               <td>{item.stock}</td>
 
               <td>
