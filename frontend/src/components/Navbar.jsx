@@ -56,7 +56,7 @@ const Navbar = () => {
       </NavLink>
 
       <a
-        href="https://www.instagram.com"
+        href="https://www.instagram.com/fridayshop.official/"
         target="_blank"
         rel="noopener noreferrer"
         style={{
@@ -69,20 +69,6 @@ const Navbar = () => {
       >
         Our Instagram
       </a>
-
-      <NavLink
-        to="/contact"
-        style={({ isActive }) => ({
-          textDecoration: "none",
-          color: "#333",
-          fontSize: "20px",
-          backgroundColor: isActive ? "#f56ae7ff" : "transparent",
-          padding: "0.2rem 0.5rem",
-          borderRadius: "5px",
-        })}
-      >
-        Contact
-      </NavLink>
     </nav>
   );
 };

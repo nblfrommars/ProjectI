@@ -6,66 +6,89 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+
 @Entity
-@Table(name="products")
-public class Product{
+@Table(name = "products")
+public class Product {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer productID;
+    @Column(name = "productID")
+    private Integer productId; 
 
-    @Column(name="productName", columnDefinition = "VARCHAR(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci", nullable = false)
-    private String productName;
+    @Column(nullable = false)
+    private String productName; 
 
     @ManyToOne
-    @JoinColumn(name = "categoryID", nullable = false)
-    @JsonBackReference
+    @JoinColumn(name = "categoryID", nullable = false) 
+    @JsonIgnoreProperties("products") 
     private Category category;
 
-    @Column(name="price")
     private Double price;
 
-    @Column(name="des", columnDefinition = "TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
     private String des;
-    private String image_url;
+
+    private String imageUrl; 
+
     private Integer stock;
-    @Column(name="created_at")
-    private Timestamp created_at;
+
+    @Column(updatable = false)
+    private Timestamp createdAt; 
+
     @OneToMany(mappedBy = "product")
-@   JsonManagedReference("product-cart")
+    @JsonIgnoreProperties("product")
     private List<Cart> carts = new ArrayList<>();
 
     @OneToMany(mappedBy = "product")
-    @JsonManagedReference("product-order")
+    @JsonIgnoreProperties("product")
     private List<OrderItem> orderItems = new ArrayList<>();
-//getters and setters
-    public Integer getProductID() { return productID; }
-    public String getProductName() { return productName; }
-    public void setProductName(String productName) { this.productName = productName; }
-    public Category getCategory() { return category; }
-    public void setCategory(Category category) { this.category = category; }
-    public Double getPrice() { return price; }
-    public void setPrice(Double price) { this.price = price; }
-    public String getDes() { return des; }
-    public void setDes(String des) { this.des = des; }
-    public String getImage_url() { return image_url; }
-    public void setImage_url(String image_url) { this.image_url = image_url; }
-    public Integer getStock() { return stock; }
-    public void setStock(Integer stock) { this.stock = stock; }
-    public Timestamp getCreated_at() { return created_at; }
-    public void setCreated_at(Timestamp created_at) { this.created_at = created_at; }
-    //constructor
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = Timestamp.from(Instant.now());
+    }
+
+
     public Product() {}
 
-    public Product(String productName, Category category, Double price, String des,
-                   String image_url, Integer stock) {
-    this.productName = productName;
-    this.category = category;
-    this.price = price;
-    this.des = des;
-    this.image_url = image_url;
-    this.stock = stock;
-    this.created_at = Timestamp.from(Instant.now());
-}
+    public Product(String productName, Category category, Double price, String des, String imageUrl, Integer stock) {
+        this.productName = productName;
+        this.category = category;
+        this.price = price;
+        this.des = des;
+        this.imageUrl = imageUrl;
+        this.stock = stock;
+    }
+
+    public Integer getProductId() { return productId; }
+    public void setProductId(Integer productId) { this.productId = productId; }
+
+    public String getProductName() { return productName; }
+    public void setProductName(String productName) { this.productName = productName; }
+
+    public Category getCategory() { return category; }
+    public void setCategory(Category category) { this.category = category; }
+
+    public Double getPrice() { return price; }
+    public void setPrice(Double price) { this.price = price; }
+
+    public String getDes() { return des; }
+    public void setDes(String des) { this.des = des; }
+
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+
+    public Integer getStock() { return stock; }
+    public void setStock(Integer stock) { this.stock = stock; }
+
+    public Timestamp getCreatedAt() { return createdAt; }
+    public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
+
+    public List<Cart> getCarts() { return carts; }
+    public void setCarts(List<Cart> carts) { this.carts = carts; }
+
+    public List<OrderItem> getOrderItems() { return orderItems; }
+    public void setOrderItems(List<OrderItem> orderItems) { this.orderItems = orderItems; }
 }

@@ -105,6 +105,7 @@ export default function ManageInventory() {
           onClose={() => setModalOpen(false)}
           onSave={saveProduct}
           onDelete={deleteProduct}
+          categories={categories}
         />
       )}
     </div>

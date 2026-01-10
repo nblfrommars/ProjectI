@@ -1,7 +1,6 @@
 package com.example.demo.model;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
 @Entity
@@ -18,22 +17,19 @@ public class Cart {
     @Column(name = "cartID")
     private Integer cartID;
 
-    //Mapping User
     @ManyToOne
     @JoinColumn(name = "userID", nullable = false)
-    @JsonBackReference("user_cart")
+    @JsonIgnoreProperties("carts") 
     private User user;
 
-    //Mapping Product
     @ManyToOne
     @JoinColumn(name = "productID", nullable = false)
-    @JsonBackReference("product-cart")
+    @JsonIgnoreProperties({"carts", "orderItems", "category"}) 
     private Product product;
 
     @Column(name = "quantity", nullable = false)
     private Integer quantity = 1;
 
-    // Constructors
     public Cart() {}
 
     public Cart(User user, Product product, Integer quantity) {
@@ -43,35 +39,15 @@ public class Cart {
     }
 
     // Getters & Setters
-    public Integer getCartID() {
-        return cartID;
-    }
+    public Integer getCartID() { return cartID; }
+    public void setCartID(Integer cartID) { this.cartID = cartID; }
 
-    public void setCartID(Integer cartID) {
-        this.cartID = cartID;
-    }
+    public User getUser() { return user; }
+    public void setUser(User user) { this.user = user; }
 
-    public User getUser() {
-        return user;
-    }
+    public Product getProduct() { return product; }
+    public void setProduct(Product product) { this.product = product; }
 
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public Product getProduct() {
-        return product;
-    }
-
-    public void setProduct(Product product) {
-        this.product = product;
-    }
-
-    public Integer getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(Integer quantity) {
-        this.quantity = quantity;
-    }
+    public Integer getQuantity() { return quantity; }
+    public void setQuantity(Integer quantity) { this.quantity = quantity; }
 }

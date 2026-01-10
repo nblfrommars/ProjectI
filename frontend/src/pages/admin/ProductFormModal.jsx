@@ -3,6 +3,7 @@ import "../../styles/ProductModalForm.css";
 
 export default function ProductFormModal({
   initialData,
+  categories = [], // Nhận mảng [{id, name}, ...]
   onClose,
   onSave,
   onDelete,
@@ -10,7 +11,7 @@ export default function ProductFormModal({
   const [form, setForm] = useState(
     initialData || {
       name: "",
-      category: "",
+      categoryId: "", // Lưu ID thay vì tên để chuẩn hóa dữ liệu
       price: "",
       description: "",
       image: null,
@@ -18,12 +19,44 @@ export default function ProductFormModal({
     }
   );
 
+  const [isAddingNew, setIsAddingNew] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
+
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+
+    if (name === "categorySelect") {
+      if (value === "add-new") {
+        setIsAddingNew(true);
+        setForm({ ...form, categoryId: "" });
+      } else {
+        setIsAddingNew(false);
+        setForm({ ...form, categoryId: value }); // Lưu ID của category đã chọn
+      }
+    } else {
+      setForm({ ...form, [name]: value });
+    }
   };
 
-  const handleFileChange = (e) => {
-    setForm({ ...form, image: e.target.files[0] });
+  const handleSave = () => {
+    // Chuẩn bị dữ liệu gửi đi
+    const finalData = {
+      ...form,
+      // Nếu thêm mới thì gửi tên mới, nếu chọn có sẵn thì gửi ID
+      newCategoryName: isAddingNew ? newCategoryName : null,
+      categoryId: isAddingNew ? null : form.categoryId,
+    };
+
+    if (isAddingNew && !newCategoryName) {
+      alert("Vui lòng nhập tên danh mục mới!");
+      return;
+    }
+    if (!isAddingNew && !form.categoryId) {
+      alert("Vui lòng chọn một danh mục!");
+      return;
+    }
+
+    onSave(finalData);
   };
 
   return (
@@ -38,16 +71,46 @@ export default function ProductFormModal({
 
         <div className="form-group">
           <label>Category</label>
-          <input
-            name="category"
-            value={form.category}
+          <select
+            name="categorySelect"
+            value={isAddingNew ? "add-new" : form.categoryId}
             onChange={handleChange}
-          />
+            className="category-select"
+          >
+            <option value="">-- Chọn danh mục --</option>
+            {categories.map((cat) => (
+              <option key={cat.id} value={cat.id}>
+                {cat.name}
+              </option>
+            ))}
+            <option
+              value="add-new"
+              style={{ color: "#318be5", fontWeight: "bold" }}
+            >
+              + Thêm danh mục mới...
+            </option>
+          </select>
+
+          {isAddingNew && (
+            <input
+              style={{ marginTop: "10px", borderColor: "#318be5" }}
+              placeholder="Nhập tên danh mục mới (vd: Quần Jean)"
+              value={newCategoryName}
+              onChange={(e) => setNewCategoryName(e.target.value)}
+              autoFocus
+            />
+          )}
         </div>
 
         <div className="form-group">
           <label>Price</label>
-          <input name="price" value={form.price} onChange={handleChange} />
+          <input
+            type="number"
+            name="price"
+            value={form.price}
+            onChange={handleChange}
+            placeholder="VND"
+          />
         </div>
 
         <div className="form-group">
@@ -61,16 +124,19 @@ export default function ProductFormModal({
 
         <div className="form-group">
           <label>Upload Image</label>
-          <input type="file" onChange={handleFileChange} />
+          <input
+            type="file"
+            onChange={(e) => setForm({ ...form, image: e.target.files[0] })}
+          />
           {form.image && (
-            <p style={{ marginTop: "0.5rem" }}>
-              Selected file: {form.image.name}
+            <p style={{ fontSize: "12px" }}>
+              Selected: {form.image.name || "Current Image"}
             </p>
           )}
         </div>
 
         <div className="form-group">
-          <label>Initial Stock</label>
+          <label>Stock</label>
           <input
             type="number"
             name="stock"
@@ -90,7 +156,7 @@ export default function ProductFormModal({
           )}
 
           <div className="right-actions">
-            <button className="save-btn" onClick={() => onSave(form)}>
+            <button className="save-btn" onClick={handleSave}>
               Save
             </button>
             <button className="cancel-btn" onClick={onClose}>

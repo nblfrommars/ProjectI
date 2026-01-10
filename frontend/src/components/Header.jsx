@@ -1,3 +1,4 @@
+import { useState } from "react"; // 1. Thêm useState
 import Logo from "../assets/images.png";
 import shopIcon from "../assets/shop.jpg";
 import cartIcon from "../assets/shopping-cart.jpg";
@@ -8,7 +9,9 @@ const Header = ({ user, onLogout }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // ten = ten truoc @
+  // 2. State quản lý từ khóa tìm kiếm
+  const [searchTerm, setSearchTerm] = useState("");
+
   const displayName = user?.email ? user.email.split("@")[0] : "";
 
   const linkStyle = (path) => ({
@@ -19,6 +22,16 @@ const Header = ({ user, onLogout }) => {
     fontWeight: location.pathname === path ? "bold" : "normal",
   });
 
+  // 3. Hàm xử lý khi nhấn Enter hoặc click nút tìm kiếm
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      // Điều hướng sang trang shop với tham số search
+      // Ví dụ: /shop?search=son+moi
+      navigate(`/shop?search=${encodeURIComponent(searchTerm.trim())}`);
+    }
+  };
+
   return (
     <header
       style={{
@@ -28,25 +41,90 @@ const Header = ({ user, onLogout }) => {
         padding: "0.8rem 2rem",
         borderBottom: "1px solid #ccc",
         background: "linear-gradient(to right,#ffcef5ff, #fff)",
+        gap: "20px", // Khoảng cách giữa các khối lớn
       }}
     >
       {/* Logo */}
-      <div>
+      <div style={{ flexShrink: 0 }}>
         <Link to="/">
           <img
             src={Logo}
             alt="Logo"
-            style={{
-              width: "230px",
-              height: "auto",
-              display: "block",
-            }}
+            style={{ width: "200px", height: "auto", display: "block" }}
           />
         </Link>
       </div>
 
+      {/* Search Bar */}
+      <form
+        onSubmit={handleSearch}
+        style={{
+          display: "flex",
+          flex: 1,
+          maxWidth: "700px",
+          position: "relative",
+        }}
+      >
+        <input
+          type="text"
+          placeholder="Nhập sản phẩm bạn muốn tìm..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          style={{
+            width: "100%",
+            padding: "8px 15px",
+            borderRadius: "20px",
+            padding: "10px 45px 10px 20px",
+            border: "1px solid #ccc",
+            outline: "none",
+            fontSize: "14px",
+          }}
+        />
+        <button
+          type="submit"
+          style={{
+            position: "absolute",
+            right: "8px",
+            top: "50%",
+            transform: "translateY(-50%)",
+            background: "rgb(229, 49, 223)",
+            color: "white",
+            border: "none",
+            width: "34px",
+            height: "34px",
+            borderRadius: "50%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+            boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+          }}
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </button>
+      </form>
+
       {/* Navigation */}
-      <nav style={{ display: "flex", alignItems: "center", gap: "1.5rem" }}>
+      <nav
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "1.5rem",
+          flexShrink: 0,
+        }}
+      >
         <Link to="/shop" style={linkStyle("/shop")}>
           <img
             src={shopIcon}
@@ -66,7 +144,6 @@ const Header = ({ user, onLogout }) => {
               />
               <strong>Your Cart</strong>
             </Link>
-
             <Link to="/orders" style={linkStyle("/orders")}>
               <img
                 src={ordersIcon}
@@ -78,20 +155,9 @@ const Header = ({ user, onLogout }) => {
           </>
         )}
 
-        {/* Hello, Sign in / Sign out */}
         <div
-          onClick={() => {
-            if (user) {
-              onLogout();
-            } else {
-              navigate("/login");
-            }
-          }}
-          style={{
-            cursor: "pointer",
-            textAlign: "right",
-            lineHeight: "1.2",
-          }}
+          onClick={() => (user ? onLogout() : navigate("/login"))}
+          style={{ cursor: "pointer", textAlign: "right", lineHeight: "1.2" }}
         >
           <div style={{ fontSize: "12px", color: "#0b0b0bff" }}>
             <em>Hello{user ? `, ${displayName}` : ""}</em>

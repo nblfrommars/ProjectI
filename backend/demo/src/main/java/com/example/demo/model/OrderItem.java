@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @Table(name = "order_items")
@@ -22,7 +23,7 @@ public class OrderItem {
     //Mapping Product
     @ManyToOne
     @JoinColumn(name = "productID", nullable = false)
-    @JsonBackReference("product-order")
+    @JsonIgnoreProperties({"orderItems", "carts"}) 
     private Product product;
 
     @Column(name = "quantity")

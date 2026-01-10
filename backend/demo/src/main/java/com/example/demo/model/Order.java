@@ -1,11 +1,10 @@
 package com.example.demo.model;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
-
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,17 +17,14 @@ public class Order {
     @Column(name = "orderID")
     private Integer orderID;
 
-    //Mapping User
     @ManyToOne
     @JoinColumn(name = "userID", nullable = false)
-    @JsonBackReference("user_orders")
+    @JsonIgnoreProperties("orders") 
     private User user;
-
 
     @Column(name = "total_price", precision = 10, scale = 2)
     private BigDecimal totalPrice;
 
-    //Order Status
     public enum OrderStatus {
         pending,
         paid,
@@ -38,65 +34,40 @@ public class Order {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private OrderStatus status;
+    private OrderStatus status = OrderStatus.pending; 
 
-    @Column(name = "created_at")
+    @Column(name = "created_at", updatable = false)
     private Timestamp createdAt;
 
-    //Mapping OrderItem
-    @OneToMany(mappedBy = "order")
-    @JsonManagedReference
+
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL) 
+    @JsonIgnoreProperties("order") 
     private List<OrderItem> orderItems = new ArrayList<>();
 
-    //Constructors
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = Timestamp.from(Instant.now());
+    }
+
     public Order() {}
 
-    //Getters & Setters
-    public Integer getOrderID() {
-        return orderID;
-    }
+    // Getters & Setters
+    public Integer getOrderID() { return orderID; }
+    public void setOrderID(Integer orderID) { this.orderID = orderID; }
 
-    public void setOrderID(Integer orderID) {
-        this.orderID = orderID;
-    }
+    public User getUser() { return user; }
+    public void setUser(User user) { this.user = user; }
 
-    public User getUser() {
-        return user;
-    }
+    public BigDecimal getTotalPrice() { return totalPrice; }
+    public void setTotalPrice(BigDecimal totalPrice) { this.totalPrice = totalPrice; }
 
-    public void setUser(User user) {
-        this.user = user;
-    }
+    public OrderStatus getStatus() { return status; }
+    public void setStatus(OrderStatus status) { this.status = status; }
 
-    public BigDecimal getTotalPrice() {
-        return totalPrice;
-    }
+    public Timestamp getCreatedAt() { return createdAt; }
+    public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
 
-    public void setTotalPrice(BigDecimal totalPrice) {
-        this.totalPrice = totalPrice;
-    }
-
-    public OrderStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(OrderStatus status) {
-        this.status = status;
-    }
-
-    public Timestamp getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Timestamp createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public List<OrderItem> getOrderItems() {
-        return orderItems;
-    }
-
-    public void setOrderItems(List<OrderItem> orderItems) {
-        this.orderItems = orderItems;
-    }
+    public List<OrderItem> getOrderItems() { return orderItems; }
+    public void setOrderItems(List<OrderItem> orderItems) { this.orderItems = orderItems; }
 }
