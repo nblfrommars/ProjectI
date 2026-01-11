@@ -1,14 +1,34 @@
-import React, { useState } from "react";
-import productsData from "../../mockdata/products";
+import React, { useEffect, useState } from "react";
 import ProductCard from "../../components/ProductCard";
 import "../../styles/Home.css";
 import HomeLogo from "../../assets/HomeLogo.jpg";
 const Home = () => {
-  const [products] = useState(productsData);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const proRes = await fetch("http://localhost:8080/api/products");
+        const proData = await proRes.json();
+        setProducts(proData);
+      } catch (error) {
+        console.error("Lỗi lấy dữ liệu từ server:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+  if (loading) {
+    return (
+      <div style={{ textAlign: "center", padding: "50px" }}>
+        Đang load sản phẩm...
+      </div>
+    );
+  }
   return (
     <div>
-      {/* Logo + Slogan */}
       <div className="home-logo">
         <img
           src={HomeLogo}
@@ -26,9 +46,10 @@ const Home = () => {
       <div className="home-products">
         <h1 style={{ color: "#020101ff" }}>Đặc biệt cho mùa này</h1>
         <div className="home-products-grid">
-          {products.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
+          {Array.isArray(products) &&
+            products.map((item) => (
+              <ProductCard key={item.productId} product={item} />
+            ))}
         </div>
       </div>
     </div>

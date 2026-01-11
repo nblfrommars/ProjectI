@@ -1,0 +1,110 @@
+.dashboard-wrapper {
+  max-width: 100%;
+  margin: 5px;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  background-color: #fff;
+}
+
+.dashboard-header {
+  font-size: 26px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 30px;
+  line-height: 1.2;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.dashboard-box {
+  height: 200px;
+  padding: 25px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  background-color: #fafafa;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.box-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.box-label {
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 12px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #666;
+}
+
+.box-number {
+  font-size: 38px;
+  font-weight: bold;
+  line-height: 1;
+  color: #333;
+}
+
+.box-product-name {
+  font-size: 20px;
+  font-weight: bold;
+  line-height: 1.3;
+  text-transform: uppercase;
+  color: #333;
+}
+
+.box-tag {
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+  border-top: 1px solid #ddd;
+  padding-top: 10px;
+  width: 100%;
+  color: #888;
+}
+
+.box-blue {
+  background-color: #ffffff;
+}
+
+.box-dark {
+  background-color: #333;
+  color: #ffffff;
+  border-color: #222;
+}
+
+.box-dark .box-label,
+.box-dark .box-number,
+.box-dark .box-tag {
+  color: #ffffff;
+}
+
+.box-dark .box-tag {
+  border-color: rgba(255, 255, 255, 0.332);
+}
+*/ .box-pink {
+  background-color: #558bcd;
+  border-color: rgb(78, 111, 162);
+  color: #000;
+}
+
+.box-pink .box-label {
+  color: #614de5;
+}
+
+.update-time {
+  margin-top: 30px;
+  font-size: 13px;
+  font-weight: bold;
+  color: #999;
+  text-transform: uppercase;
+}

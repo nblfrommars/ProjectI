@@ -5,8 +5,6 @@ import com.example.demo.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import java.util.Optional;
-import com.example.demo.config.SecurityConfig;
 
 @Service
 public class UserService {
@@ -16,25 +14,26 @@ public class UserService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
-
-    // register
     public User register(User user) {
-    if (userRepository.findByEmail(user.getEmail()).isPresent()) {
-        throw new RuntimeException("Email đã tồn tại!");
+        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
+            throw new RuntimeException("Email đã tồn tại!");
+        }
+
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+
+        if (user.getRole() == null || user.getRole().isEmpty()) {
+            user.setRole("user");
+        }
+
+        return userRepository.save(user);
     }
-    if (user.getRole() == null) user.setRole("user");
-    user.setPw(passwordEncoder.encode(user.getPw()));
-    return userRepository.save(user);
-}
 
-    // login
-    public User login(String email, String pw) {
+    public User login(String email, String rawPassword) {
+
         User user = userRepository.findByEmail(email)
-            .orElseThrow(() ->
-                new RuntimeException("Email hoặc mật khẩu không đúng")
-            );
+                .orElseThrow(() -> new RuntimeException("Email hoặc mật khẩu không đúng"));
 
-        if (!passwordEncoder.matches(pw, user.getPw())) {
+        if (!passwordEncoder.matches(rawPassword, user.getPassword())) {
             throw new RuntimeException("Email hoặc mật khẩu không đúng");
         }
 

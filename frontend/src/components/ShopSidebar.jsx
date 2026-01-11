@@ -39,12 +39,12 @@ const ShopSidebar = ({ categories, selectedCategory, setSelectedCategory }) => {
 
         {categories.map((cat) => (
           <li
-            key={cat.id}
-            onClick={() => setSelectedCategory(cat.id)}
+            key={cat.categoryId}
+            onClick={() => setSelectedCategory(cat.categoryId)}
             style={{
               marginBottom: "10px",
               cursor: "pointer",
-              fontWeight: selectedCategory === cat.id ? "700" : "400",
+              fontWeight: selectedCategory === cat.categoryId ? "700" : "400",
               textAlign: "center",
               padding: "8px",
               borderBottom: "1px solid rgba(0,0,0,0.2)",
@@ -58,7 +58,7 @@ const ShopSidebar = ({ categories, selectedCategory, setSelectedCategory }) => {
               (e.currentTarget.style.backgroundColor = "transparent")
             }
           >
-            {cat.name}
+            {cat.categoryName}
           </li>
         ))}
       </ul>

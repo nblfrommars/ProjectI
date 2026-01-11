@@ -3,7 +3,7 @@ import "../../styles/ProductModalForm.css";
 
 export default function ProductFormModal({
   initialData,
-  categories = [], // Nhận mảng [{id, name}, ...]
+  categories = [],
   onClose,
   onSave,
   onDelete,
@@ -11,7 +11,7 @@ export default function ProductFormModal({
   const [form, setForm] = useState(
     initialData || {
       name: "",
-      categoryId: "", // Lưu ID thay vì tên để chuẩn hóa dữ liệu
+      categoryId: "",
       price: "",
       description: "",
       image: null,
@@ -31,7 +31,7 @@ export default function ProductFormModal({
         setForm({ ...form, categoryId: "" });
       } else {
         setIsAddingNew(false);
-        setForm({ ...form, categoryId: value }); // Lưu ID của category đã chọn
+        setForm({ ...form, categoryId: value });
       }
     } else {
       setForm({ ...form, [name]: value });
@@ -39,10 +39,8 @@ export default function ProductFormModal({
   };
 
   const handleSave = () => {
-    // Chuẩn bị dữ liệu gửi đi
     const finalData = {
       ...form,
-      // Nếu thêm mới thì gửi tên mới, nếu chọn có sẵn thì gửi ID
       newCategoryName: isAddingNew ? newCategoryName : null,
       categoryId: isAddingNew ? null : form.categoryId,
     };

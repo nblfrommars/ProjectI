@@ -27,13 +27,12 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody User user) {
-    try {
-        User u = userService.login(user.getEmail(), user.getPw());
-        return ResponseEntity.ok(u);
-    } catch (RuntimeException e) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body("Email hoặc mật khẩu không đúng");
+        try {
+            User u = userService.login(user.getEmail(), user.getPassword());
+            return ResponseEntity.ok(u);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(e.getMessage());
+        }
     }
-}
-
 }
