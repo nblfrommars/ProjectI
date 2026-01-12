@@ -7,47 +7,72 @@ import jakarta.persistence.*;
 @Table(
     name = "cart_items",
     uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"userID", "productID"})
+        @UniqueConstraint(columnNames = {"id", "product_id", "size"})
     }
 )
 public class Cart {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "cartID")
-    private Integer cartID;
+    private Integer cartId;
 
     @ManyToOne
-    @JoinColumn(name = "userID", nullable = false)
+    @JoinColumn(name = "id", nullable = false)
     @JsonIgnoreProperties("carts") 
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "productID", nullable = false)
+    @JoinColumn(name = "product_id", nullable = false)
     @JsonIgnoreProperties({"carts", "orderItems", "category"}) 
     private Product product;
 
-    @Column(name = "quantity", nullable = false)
+    @Column(nullable = false)
     private Integer quantity = 1;
+
+    @Column(length = 10)
+    private String size;
 
     public Cart() {}
 
-    public Cart(User user, Product product, Integer quantity) {
+    public Cart(User user, Product product, Integer quantity, String size) {
         this.user = user;
         this.product = product;
         this.quantity = quantity;
+        this.size = size;
     }
 
-    // Getters & Setters
-    public Integer getCartID() { return cartID; }
-    public void setCartID(Integer cartID) { this.cartID = cartID; }
+    public Integer getCartId() { 
+        return cartId; 
+    }
+    public void setCartId(Integer cartId) { 
+        this.cartId = cartId; 
+    }
 
-    public User getUser() { return user; }
-    public void setUser(User user) { this.user = user; }
+    public User getUser() { 
+        return user; 
+    }
+    public void setUser(User user) { 
+        this.user = user; 
+    }
 
-    public Product getProduct() { return product; }
-    public void setProduct(Product product) { this.product = product; }
+    public Product getProduct() { 
+        return product; 
+    }
+    public void setProduct(Product product) { 
+        this.product = product; 
+    }
 
-    public Integer getQuantity() { return quantity; }
-    public void setQuantity(Integer quantity) { this.quantity = quantity; }
+    public Integer getQuantity() { 
+        return quantity; 
+    }
+    public void setQuantity(Integer quantity) { 
+        this.quantity = quantity; 
+    }
+
+    public String getSize() {
+        return size;
+    }
+    public void setSize(String size) {
+        this.size = size;
+    }
 }

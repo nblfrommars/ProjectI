@@ -3,7 +3,7 @@ import ProductCard from "../../components/ProductCard";
 import ShopSidebar from "../../components/ShopSidebar";
 import "../../styles/Shop.css";
 import { useLocation } from "react-router-dom";
-
+const API_BASE_URL = "http://localhost:8080";
 export default function Shop() {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -17,7 +17,7 @@ export default function Shop() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const prodRes = await fetch("http://localhost:8080/api/products");
+        const prodRes = await fetch(`${API_BASE_URL}/api/products`);
         const prodData = await prodRes.json();
         setProducts(prodData);
 
@@ -65,7 +65,11 @@ export default function Shop() {
       <div className="product-grid">
         {filteredProducts.length > 0 ? (
           filteredProducts.map((product) => (
-            <ProductCard key={product.productId} product={product} />
+            <ProductCard
+              key={product.productId}
+              product={product}
+              baseUrl={API_BASE_URL}
+            />
           ))
         ) : (
           <div

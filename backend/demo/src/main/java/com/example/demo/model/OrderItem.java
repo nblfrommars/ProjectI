@@ -2,8 +2,6 @@ package com.example.demo.model;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;
-
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
@@ -12,43 +10,48 @@ public class OrderItem {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer orderItemID;
+    private Integer orderItemId; 
 
-    //Mapping Order
     @ManyToOne
-    @JoinColumn(name = "orderID", nullable = false)
-    @JsonBackReference
+    @JoinColumn(name = "order_id", nullable = false)
+    @JsonIgnoreProperties("orderItems")
     private Order order;
 
-    //Mapping Product
     @ManyToOne
-    @JoinColumn(name = "productID", nullable = false)
+    @JoinColumn(name = "product_id", nullable = false)
     @JsonIgnoreProperties({"orderItems", "carts"}) 
     private Product product;
 
-    @Column(name = "quantity")
     private Integer quantity;
 
-    @Column(name = "price", precision = 10, scale = 2)
+    @Column(precision = 10, scale = 2)
     private BigDecimal price;
 
-    // Constructors
+     @Column(precision = 10, scale = 2)
+    private BigDecimal subTotal;
+
+    @Column(length = 10)
+    private String size;
+
     public OrderItem() {}
 
-    public OrderItem(Order order, Product product, Integer quantity, BigDecimal price) {
+    public OrderItem(Order order, Product product, Integer quantity, BigDecimal price, String size) {
         this.order = order;
         this.product = product;
         this.quantity = quantity;
         this.price = price;
+        this.size = size;
+        if (price != null && quantity != null) {
+            this.subTotal = price.multiply(new BigDecimal(quantity));
+        }
     }
 
-    // Getters & Setters
-    public Integer getOrderItemID() {
-        return orderItemID;
+    public Integer getOrderItemId() {
+        return orderItemId;
     }
 
-    public void setOrderItemID(Integer orderItemID) {
-        this.orderItemID = orderItemID;
+    public void setOrderItemId(Integer orderItemId) {
+        this.orderItemId = orderItemId;
     }
 
     public Order getOrder() {
@@ -81,6 +84,22 @@ public class OrderItem {
 
     public void setPrice(BigDecimal price) {
         this.price = price;
+    }
+
+    public String getSize() {
+        return size;
+    }
+
+    public void setSize(String size) {
+        this.size = size;
+    }
+
+    public BigDecimal getSubTotal() {
+        return subTotal;
+    }
+
+    public void setSubTotal(BigDecimal subTotal) {
+        this.subTotal = subTotal;
     }
 }
 

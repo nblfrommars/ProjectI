@@ -1,51 +1,98 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ProductFormModal from "./ProductFormModal";
-import products from "../../mockdata/products";
-import categories from "../../mockdata/categories";
 import "../../styles/ManageInventory.css";
+
+const API_BASE_URL = "http://localhost:8080/api";
+const IMAGE_BASE_URL = "http://localhost:8080";
+
 export default function ManageInventory() {
-  const [inventory, setInventory] = useState(products);
+  const [inventory, setInventory] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [editingProduct, setEditingProduct] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
-  const [catModalOpen, setCatModalOpen] = useState(false);
-  const updateStock = (id, newStock) => {
-    setInventory((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, stock: newStock } : p))
-    );
+  const [loading, setLoading] = useState(true);
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const [prodRes, catRes] = await Promise.all([
+        fetch(`${API_BASE_URL}/products`),
+        fetch(`${API_BASE_URL}/categories`),
+      ]);
+      const prodData = await prodRes.json();
+      const catData = await catRes.json();
+      setInventory(prodData);
+      setCategories(catData);
+    } catch (error) {
+      console.error("Lỗi khi lấy dữ liệu:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const saveProduct = (product) => {
-    if (product.id) {
-      setInventory((prev) =>
-        prev.map((p) => (p.id === product.id ? product : p))
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const saveProduct = async (productData, imageFile) => {
+    try {
+      const formData = new FormData();
+      formData.append(
+        "product",
+        new Blob([JSON.stringify(productData)], { type: "application/json" })
       );
-    } else {
-      const newProduct = {
-        ...product,
-        id: Date.now(),
-      };
-      setInventory((prev) => [...prev, newProduct]);
+
+      if (imageFile) {
+        formData.append("image", imageFile);
+      }
+
+      let url = `${API_BASE_URL}/products`;
+      let method = "POST";
+
+      if (productData.productId) {
+        url = `${API_BASE_URL}/products/${productData.productId}`;
+        method = "PUT";
+      }
+
+      const response = await fetch(url, {
+        method: method,
+        body: formData,
+      });
+
+      if (response.ok) {
+        alert("Lưu sản phẩm thành công!");
+        fetchData();
+        setModalOpen(false);
+      } else {
+        alert("Có lỗi xảy ra khi lưu!");
+      }
+    } catch (error) {
+      console.error("Lỗi:", error);
     }
-    setModalOpen(false);
   };
 
-  const deleteProduct = (id) => {
-    if (window.confirm("Are you sure you want to delete this product?")) {
-      setInventory((prev) => prev.filter((p) => p.id !== id));
-      setModalOpen(false);
+  const deleteProduct = async (id) => {
+    if (window.confirm("Bạn có chắc chắn muốn xóa sản phẩm này?")) {
+      try {
+        const res = await fetch(`${API_BASE_URL}/products/${id}`, {
+          method: "DELETE",
+        });
+        if (res.ok) {
+          setInventory((prev) => prev.filter((p) => p.productId !== id));
+          setModalOpen(false);
+        }
+      } catch (error) {
+        console.error("Lỗi khi xóa:", error);
+      }
     }
   };
-  const inventoryWithCategory = inventory.map((item) => {
-    const category = categories.find((c) => c.id === item.categoryId);
-    return {
-      ...item,
-      categoryName: category ? category.name : "Unknown",
-    };
-  });
+
+  if (loading)
+    return <div style={{ padding: "20px" }}>Đang tải dữ liệu kho...</div>;
 
   return (
-    <div>
-      <h2>Inventory Management</h2>
+    <div className="manage-inventory">
+      <h2>Quản lý kho hàng</h2>
 
       <button
         className="add-btn"
@@ -54,38 +101,52 @@ export default function ManageInventory() {
           setModalOpen(true);
         }}
       >
-        + Add Product
+        + Thêm sản phẩm
       </button>
 
       <table className="admin-table">
         <thead>
           <tr>
-            <th>Product</th>
+            <th>Image</th>
+            <th>Tên sản phẩm</th>
             <th>Category</th>
             <th>Stock</th>
-            <th>Adjust</th>
-            <th>Edit Product Info</th>
+            <th>Chỉnh sửa</th>
           </tr>
         </thead>
 
         <tbody>
-          {inventoryWithCategory.map((item) => (
-            <tr key={item.id}>
-              <td>{item.name}</td>
-              <td>{item.categoryName}</td>
+          {inventory.map((item) => (
+            <tr key={item.productId}>
+              <td>
+                <img
+                  src={
+                    item.imageUrl
+                      ? `${IMAGE_BASE_URL}${item.imageUrl}`
+                      : "https://via.placeholder.com/50"
+                  }
+                  alt={item.productName}
+                  style={{
+                    width: "50px",
+                    height: "50px",
+                    objectFit: "cover",
+                    borderRadius: "4px",
+                  }}
+                  onError={(e) => {
+                    e.target.src = "https://via.placeholder.com/50";
+                  }}
+                />
+              </td>
+
+              <td>{item.productName}</td>
+
+              <td>{item.category?.categoryName || "N/A"}</td>
+
               <td>{item.stock}</td>
 
               <td>
-                <button onClick={() => updateStock(item.id, item.stock + 1)}>
-                  +
-                </button>
-                <button onClick={() => updateStock(item.id, item.stock - 1)}>
-                  -
-                </button>
-              </td>
-
-              <td>
                 <button
+                  className="edit-btn"
                   onClick={() => {
                     setEditingProduct(item);
                     setModalOpen(true);

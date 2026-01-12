@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../../styles/ProductModalForm.css";
+
+const API_BASE_URL = "http://localhost:8080/api";
 
 export default function ProductFormModal({
   initialData,
@@ -8,19 +10,19 @@ export default function ProductFormModal({
   onSave,
   onDelete,
 }) {
-  const [form, setForm] = useState(
-    initialData || {
-      name: "",
-      categoryId: "",
-      price: "",
-      description: "",
-      image: null,
-      stock: 0,
-    }
-  );
+  const [form, setForm] = useState({
+    productId: initialData?.productId || null,
+    productName: initialData?.productName || "",
+    price: initialData?.price || "",
+    des: initialData?.des || "",
+    stock: initialData?.stock || 0,
+    category: initialData?.category || { categoryId: "" },
+    image: null,
+  });
 
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -28,57 +30,84 @@ export default function ProductFormModal({
     if (name === "categorySelect") {
       if (value === "add-new") {
         setIsAddingNew(true);
-        setForm({ ...form, categoryId: "" });
+        setForm({ ...form, category: { categoryId: "" } });
       } else {
         setIsAddingNew(false);
-        setForm({ ...form, categoryId: value });
+        setForm({ ...form, category: { categoryId: value } });
       }
     } else {
       setForm({ ...form, [name]: value });
     }
   };
 
-  const handleSave = () => {
-    const finalData = {
-      ...form,
-      newCategoryName: isAddingNew ? newCategoryName : null,
-      categoryId: isAddingNew ? null : form.categoryId,
-    };
+  const handleSave = async () => {
+    if (!form.productName) return alert("Vui lòng nhập tên sản phẩm!");
+    if (!isAddingNew && !form.category.categoryId)
+      return alert("Vui lòng chọn danh mục!");
+    if (isAddingNew && !newCategoryName)
+      return alert("Vui lòng nhập tên danh mục mới!");
 
-    if (isAddingNew && !newCategoryName) {
-      alert("Vui lòng nhập tên danh mục mới!");
-      return;
-    }
-    if (!isAddingNew && !form.categoryId) {
-      alert("Vui lòng chọn một danh mục!");
-      return;
-    }
+    setIsSaving(true);
+    try {
+      let finalCategoryId = form.category.categoryId;
 
-    onSave(finalData);
+      if (isAddingNew) {
+        const catRes = await fetch(`${API_BASE_URL}/categories`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ categoryName: newCategoryName }),
+        });
+        if (catRes.ok) {
+          const newCat = await catRes.json();
+          finalCategoryId = newCat.categoryId;
+        } else {
+          throw new Error("Không thể lưu danh mục mới");
+        }
+      }
+
+      const productObject = {
+        productId: form.productId,
+        productName: form.productName,
+        price: form.price,
+        des: form.des,
+        stock: form.stock,
+        category: { categoryId: finalCategoryId },
+      };
+
+      onSave(productObject, form.image);
+    } catch (error) {
+      alert("Lỗi: " + error.message);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
     <div className="modal-backdrop">
       <div className="modal-content">
-        <h3>{initialData ? "Edit Product" : "Add Product"}</h3>
+        <h3>{initialData ? "Chỉnh sửa sản phẩm" : "Thêm sản phẩm mới"}</h3>
 
         <div className="form-group">
-          <label>Product Name</label>
-          <input name="name" value={form.name} onChange={handleChange} />
+          <label>Tên sản phẩm</label>
+          <input
+            name="productName"
+            value={form.productName}
+            onChange={handleChange}
+          />
         </div>
 
         <div className="form-group">
-          <label>Category</label>
+          <label>Danh mục</label>
           <select
             name="categorySelect"
-            value={isAddingNew ? "add-new" : form.categoryId}
+            value={isAddingNew ? "add-new" : form.category.categoryId}
             onChange={handleChange}
             className="category-select"
           >
             <option value="">-- Chọn danh mục --</option>
             {categories.map((cat) => (
-              <option key={cat.id} value={cat.id}>
-                {cat.name}
+              <option key={cat.categoryId} value={cat.categoryId}>
+                {cat.categoryName}
               </option>
             ))}
             <option
@@ -92,7 +121,7 @@ export default function ProductFormModal({
           {isAddingNew && (
             <input
               style={{ marginTop: "10px", borderColor: "#318be5" }}
-              placeholder="Nhập tên danh mục mới (vd: Quần Jean)"
+              placeholder="Nhập tên danh mục mới"
               value={newCategoryName}
               onChange={(e) => setNewCategoryName(e.target.value)}
               autoFocus
@@ -101,40 +130,36 @@ export default function ProductFormModal({
         </div>
 
         <div className="form-group">
-          <label>Price</label>
+          <label>Giá bán (VND)</label>
           <input
             type="number"
             name="price"
             value={form.price}
             onChange={handleChange}
-            placeholder="VND"
           />
         </div>
 
         <div className="form-group">
-          <label>Description</label>
-          <textarea
-            name="description"
-            value={form.description}
-            onChange={handleChange}
-          />
+          <label>Mô tả sản phẩm</label>
+          <textarea name="des" value={form.des} onChange={handleChange} />
         </div>
 
         <div className="form-group">
-          <label>Upload Image</label>
+          <label>Ảnh sản phẩm</label>
           <input
             type="file"
+            accept="image/*"
             onChange={(e) => setForm({ ...form, image: e.target.files[0] })}
           />
-          {form.image && (
-            <p style={{ fontSize: "12px" }}>
-              Selected: {form.image.name || "Current Image"}
+          {initialData?.imageUrl && !form.image && (
+            <p style={{ fontSize: "11px" }}>
+              Ảnh hiện tại: {initialData.imageUrl}
             </p>
           )}
         </div>
 
         <div className="form-group">
-          <label>Stock</label>
+          <label>Số lượng kho</label>
           <input
             type="number"
             name="stock"
@@ -147,18 +172,27 @@ export default function ProductFormModal({
           {initialData && (
             <button
               className="delete-btn"
-              onClick={() => onDelete(initialData)}
+              onClick={() => onDelete(initialData.productId)}
+              disabled={isSaving}
             >
-              Delete
+              Xóa
             </button>
           )}
 
           <div className="right-actions">
-            <button className="save-btn" onClick={handleSave}>
-              Save
+            <button
+              className="save-btn"
+              onClick={handleSave}
+              disabled={isSaving}
+            >
+              {isSaving ? "Đang xử lý..." : "Lưu"}
             </button>
-            <button className="cancel-btn" onClick={onClose}>
-              Cancel
+            <button
+              className="cancel-btn"
+              onClick={onClose}
+              disabled={isSaving}
+            >
+              Hủy
             </button>
           </div>
         </div>

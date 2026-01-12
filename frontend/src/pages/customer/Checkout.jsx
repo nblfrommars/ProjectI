@@ -14,7 +14,7 @@ const Checkout = ({ cart, clearCart }) => {
   const [paymentMethod, setPaymentMethod] = useState("cod"); // mac dinh thanh toan COD
 
   const totalPrice = safeCart.reduce((sum, item) => {
-    const qty = Number(item.qty ?? item.quantity) || 0;
+    const qty = Number(item.qty) || 0;
     const price = Number(item.price) || 0;
     return sum + price * qty;
   }, 0);
@@ -52,9 +52,15 @@ const Checkout = ({ cart, clearCart }) => {
           const qty = Number(item.qty) || 0;
           return (
             <div className="checkout-item" key={`${item.id}-${item.size}`}>
-              <img src={item.image} alt={item.name} />
+              <img
+                src={item.imageUrl || "https://via.placeholder.com/80"}
+                alt={item.productName}
+                onError={(e) => {
+                  e.target.src = "https://via.placeholder.com/80";
+                }}
+              />
               <div className="item-info">
-                <p className="item-name">{item.name}</p>
+                <p className="item-name">{item.productName}</p>
                 <p>Size: {item.size}</p>
                 <p>Số lượng: {qty}</p>
                 <p>{(price * qty).toLocaleString()}₫</p>

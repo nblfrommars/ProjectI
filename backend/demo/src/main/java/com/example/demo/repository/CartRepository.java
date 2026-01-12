@@ -12,9 +12,11 @@ import java.util.Optional;
 @Repository
 public interface CartRepository extends JpaRepository<Cart, Integer> {
 
-    // mo cart theo user
     List<Cart> findByUser(User user);
 
-    // Tim cart theo user
-    Optional<Cart> findByUserAndProduct(User user, Product product);
+    List<Cart> findByUser_Id(Integer userId);
+
+    Optional<Cart> findByUser_IdAndProduct_ProductIdAndSize(Integer userId, Integer productId, String size);
+
+    void deleteByUser_Id(Integer userId);
 }

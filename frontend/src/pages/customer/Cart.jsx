@@ -16,9 +16,9 @@ export default function Cart() {
     saveCart(newCart);
   };
 
-  const changeQty = (id, size, amount) => {
+  const changeQty = (productId, size, amount) => {
     const updated = cart.map((item) => {
-      if (item.id === id && item.size === size) {
+      if (item.productId === productId && item.size === size) {
         return { ...item, qty: Math.max(1, item.qty + amount) };
       }
       return item;
@@ -26,9 +26,9 @@ export default function Cart() {
     updateCart(updated);
   };
 
-  const removeItem = (id, size) => {
+  const removeItem = (productId, size) => {
     const updated = cart.filter(
-      (item) => !(item.id === id && item.size === size)
+      (item) => !(item.productId === productId && item.size === size)
     );
     updateCart(updated);
   };
@@ -45,9 +45,16 @@ export default function Cart() {
         <>
           <ul className="cart-list">
             {cart.map((item) => (
-              <li key={`${item.id}-${item.size}`} className="cart-item">
+              <li key={`${item.productId}-${item.size}`} className="cart-item">
                 <div className="left">
-                  <img src={item.image} alt={item.name} className="thumb" />
+                  <img
+                    src={item.imageUrl || "https://via.placeholder.com/80"}
+                    alt={item.productName}
+                    className="thumb"
+                    onError={(e) => {
+                      e.target.src = "https://via.placeholder.com/80";
+                    }}
+                  />
                   <div>
                     <p className="name">{item.name}</p>
                     <p className="size">Size: {item.size}</p>

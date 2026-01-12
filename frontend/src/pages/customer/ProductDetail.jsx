@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "../../styles/ProductDetail.css";
 import { addToCart } from "../../utils/cartStorage";
-
+const API_BASE_URL = "http://localhost:8080";
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -12,10 +12,16 @@ const ProductDetail = () => {
   const [loading, setLoading] = useState(true);
   const [size, setSize] = useState("M");
 
+  const getFullImageUrl = (url) => {
+    if (!url) return "https://via.placeholder.com/400";
+    if (url.startsWith("http")) return url;
+    return `${API_BASE_URL}${url}`;
+  };
+
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const res = await fetch(`http://localhost:8080/api/products/${id}`);
+        const res = await fetch(`${API_BASE_URL}/api/products/${id}`);
         if (!res.ok) {
           throw new Error("Không tìm thấy sản phẩm");
         }
@@ -41,7 +47,7 @@ const ProductDetail = () => {
       productId: product.productId,
       productName: product.productName,
       price: product.price,
-      imageUrl: product.imageUrl,
+      imageUrl: getFullImageUrl(product.imageUrl),
       size: size,
       qty: 1,
     });
@@ -66,7 +72,13 @@ const ProductDetail = () => {
     <div className="product-detail-container">
       <div className="product-detail-horizontal">
         <div className="product-detail-image">
-          <img src={product.imageUrl} alt={product.productName} />
+          <img
+            src={getFullImageUrl(product.imageUrl)}
+            alt={product.productName}
+            onError={(e) => {
+              e.target.src = "https://via.placeholder.com/400";
+            }}
+          />
         </div>
 
         <div className="product-detail-info">

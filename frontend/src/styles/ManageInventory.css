@@ -34,7 +34,6 @@
   background: #0f5dc1;
 }
 
-/* --- Table --- */
 .admin-table {
   width: 100%;
   border-collapse: collapse;
@@ -73,22 +72,22 @@
 
 .admin-table th:nth-child(1),
 .admin-table td:nth-child(1) {
-  width: 30%;
+  width: 10%;
 }
 
 .admin-table th:nth-child(2),
 .admin-table td:nth-child(2) {
-  width: 15%;
+  width: 25%;
 }
 
 .admin-table th:nth-child(3),
 .admin-table td:nth-child(3) {
-  width: 15%;
+  width: 20%;
 }
 
 .admin-table th:nth-child(4),
 .admin-table td:nth-child(4) {
-  width: 20%;
+  width: 15%;
 }
 .admin-table th:nth-child(5),
 .admin-table td:nth-child(5) {

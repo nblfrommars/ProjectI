@@ -14,36 +14,25 @@ public class Order {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "orderID")
-    private Integer orderID;
+    private Integer orderId;
 
     @ManyToOne
-    @JoinColumn(name = "userID", nullable = false)
+    @JoinColumn(name = "id", nullable = false)
     @JsonIgnoreProperties("orders") 
     private User user;
 
-    @Column(name = "total_price", precision = 10, scale = 2)
+    @Column(precision = 10, scale = 2)
     private BigDecimal totalPrice;
 
-    public enum OrderStatus {
-        pending,
-        paid,
-        shipped,
-        cancelled
-    }
-
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private OrderStatus status = OrderStatus.pending; 
+    private String status = "pending"; 
 
-    @Column(name = "created_at", updatable = false)
+    @Column(updatable = false)
     private Timestamp createdAt;
 
-
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL) 
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true) 
     @JsonIgnoreProperties("order") 
     private List<OrderItem> orderItems = new ArrayList<>();
-
 
     @PrePersist
     protected void onCreate() {
@@ -52,22 +41,45 @@ public class Order {
 
     public Order() {}
 
-    // Getters & Setters
-    public Integer getOrderID() { return orderID; }
-    public void setOrderID(Integer orderID) { this.orderID = orderID; }
+    public Integer getOrderId() { 
+        return orderId; 
+    }
+    public void setOrderId(Integer orderId) { 
+        this.orderId = orderId; 
+    }
 
-    public User getUser() { return user; }
-    public void setUser(User user) { this.user = user; }
+    public User getUser() { 
+        return user; 
+    }
+    public void setUser(User user) { 
+        this.user = user; 
+    }
 
-    public BigDecimal getTotalPrice() { return totalPrice; }
-    public void setTotalPrice(BigDecimal totalPrice) { this.totalPrice = totalPrice; }
+    public BigDecimal getTotalPrice() { 
+        return totalPrice; 
+    }
+    public void setTotalPrice(BigDecimal totalPrice) { 
+        this.totalPrice = totalPrice; 
+    }
 
-    public OrderStatus getStatus() { return status; }
-    public void setStatus(OrderStatus status) { this.status = status; }
+    public String getStatus() { 
+        return status; 
+    }
+    public void setStatus(String status) { 
+        this.status = status; 
+    }
 
-    public Timestamp getCreatedAt() { return createdAt; }
-    public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
+    public Timestamp getCreatedAt() { 
+        return createdAt; 
+    }
+    public void setCreatedAt(Timestamp createdAt) { 
+        this.createdAt = createdAt; 
+    }
 
-    public List<OrderItem> getOrderItems() { return orderItems; }
-    public void setOrderItems(List<OrderItem> orderItems) { this.orderItems = orderItems; }
+    public List<OrderItem> getOrderItems() { 
+        return orderItems; 
+    }
+    public void setOrderItems(List<OrderItem> orderItems) { 
+        this.orderItems = orderItems; 
+    }
 }

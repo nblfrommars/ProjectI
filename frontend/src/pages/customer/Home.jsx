@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import ProductCard from "../../components/ProductCard";
 import "../../styles/Home.css";
 import HomeLogo from "../../assets/HomeLogo.jpg";
+
+const API_BASE_URL = "http://localhost:8080";
 const Home = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -9,7 +11,7 @@ const Home = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const proRes = await fetch("http://localhost:8080/api/products");
+        const proRes = await fetch(`${API_BASE_URL}/api/products`);
         const proData = await proRes.json();
         setProducts(proData);
       } catch (error) {
@@ -48,7 +50,11 @@ const Home = () => {
         <div className="home-products-grid">
           {Array.isArray(products) &&
             products.map((item) => (
-              <ProductCard key={item.productId} product={item} />
+              <ProductCard
+                key={item.productId}
+                product={item}
+                baseUrl={API_BASE_URL}
+              />
             ))}
         </div>
       </div>

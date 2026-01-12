@@ -3,8 +3,10 @@ package com.example.demo.controller;
 import com.example.demo.model.Product;
 import com.example.demo.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @RestController
@@ -25,14 +27,19 @@ public class ProductController {
         return ResponseEntity.ok(productService.getById(id));
     }
 
-    @PostMapping
-    public Product add(@RequestBody Product product) {
-        return productService.save(product);
+     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Product add(
+            @RequestPart("product") Product product, 
+            @RequestPart("image") MultipartFile image) {
+        return productService.save(product, image);
     }
 
-    @PutMapping("/{id}")
-    public Product edit(@PathVariable Integer id, @RequestBody Product product) {
-        return productService.update(id, product);
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Product edit(
+            @PathVariable Integer id, 
+            @RequestPart("product") Product product,
+            @RequestPart(value = "image", required = false) MultipartFile image) {
+        return productService.update(id, product, image);
     }
 
     @DeleteMapping("/{id}")
