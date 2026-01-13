@@ -1,127 +1,209 @@
 import React, { useEffect, useState } from "react";
 import "../../styles/OrderHistory.css";
-const mockOrders = [
-  {
-    id: 1,
-    date: "2025-11-28",
-    products: [
-      { name: "T-Shirt GLOWAY", qty: 2, price: 150000 },
-      { name: "Jeans Classic", qty: 1, price: 450000 },
-    ],
-    total: 750000,
-    status: "Pending",
-  },
-  {
-    id: 2,
-    date: "2025-11-25",
-    products: [{ name: "Sneakers Black", qty: 1, price: 800000 }],
-    total: 800000,
-    status: "Shipped",
-  },
-  {
-    id: 3,
-    date: "2025-11-20",
-    products: [
-      { name: "Hoodie GLOWAY", qty: 1, price: 400000 },
-      { name: "Cap Red", qty: 2, price: 120000 },
-    ],
-    total: 640000,
-    status: "Paid",
-  },
-  {
-    id: 4,
-    date: "2025-11-15",
-    products: [{ name: "Socks Pack", qty: 3, price: 90000 }],
-    total: 90000,
-    status: "Cancel",
-  },
-];
+import axios from "axios";
+
+const IMAGE_BASE_URL = "http://localhost:8080";
+const DEFAULT_IMAGE = "https://via.placeholder.com/80?text=No+Image";
 
 const statusColors = {
-  Pending: "#fbc02d",
-  Shipped: "#1976d2",
-  Paid: "#388e3c",
-  Cancel: "#d32f2f",
+  pending: "#fbc02d",
+  confirmed: "#4fc3f7",
+  shipping: "#1976d2",
+  delivered: "#388e3c",
+  cancelled: "#d32f2f",
 };
 
 const OrderHistory = () => {
+  // Lấy userId từ localStorage ngay khi khởi tạo state
+  const [userId] = useState(() => {
+    const saved = localStorage.getItem("user");
+    if (saved) {
+      const user = JSON.parse(saved);
+      return user.id || user.userId;
+    }
+    return null;
+  });
+
   const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState("All");
-  const [sortOrder, setSortOrder] = useState("desc"); //newest to oldest
+  const [sortOrder, setSortOrder] = useState("desc");
 
   useEffect(() => {
-    setOrders(mockOrders);
-  }, []);
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
+
+    const fetchOrders = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get(
+          `http://localhost:8080/api/orders/user/${userId}`
+        );
+        setOrders(response.data);
+      } catch (error) {
+        console.error("Lỗi khi fetch đơn hàng:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOrders();
+  }, [userId]);
+
+  const getImageUrl = (url) => {
+    if (!url) return DEFAULT_IMAGE;
+    if (url.startsWith("http")) return url;
+    return `${IMAGE_BASE_URL}${url}`;
+  };
 
   const filteredOrders = orders
     .filter((order) => filterStatus === "All" || order.status === filterStatus)
     .sort((a, b) => {
-      const dateA = new Date(a.date);
-      const dateB = new Date(b.date);
+      const dateA = new Date(a.createdAt);
+      const dateB = new Date(b.createdAt);
       return sortOrder === "desc" ? dateB - dateA : dateA - dateB;
     });
 
+  const handleCancelOrder = async (orderId) => {
+    const confirmCancel = window.confirm(
+      "Bạn có chắc chắn muốn hủy đơn hàng này không? Số lượng sản phẩm sẽ được hoàn lại kho."
+    );
+
+    if (confirmCancel) {
+      try {
+        await axios.put(
+          `http://localhost:8080/api/orders/${orderId}/status`,
+          null,
+          {
+            params: { status: "cancelled" },
+          }
+        );
+
+        setOrders((prevOrders) =>
+          prevOrders.map((order) =>
+            order.orderId === orderId
+              ? { ...order, status: "cancelled" }
+              : order
+          )
+        );
+
+        alert("Hủy đơn hàng thành công!");
+      } catch (error) {
+        console.error("Lỗi khi hủy đơn:", error);
+        alert("Không thể hủy đơn hàng. Vui lòng thử lại sau.");
+      }
+    }
+  };
+
+  if (loading)
+    return <div className="loading">Đang tải lịch sử đơn hàng...</div>;
+
+  if (!userId) {
+    return (
+      <div className="order-history-container">
+        <p className="no-orders">Vui lòng đăng nhập để xem lịch sử đơn hàng.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="order-history-container">
-      <h2>Order History</h2>
+      <h2>Lịch Sử Đơn Hàng</h2>
 
       <div className="order-filters">
-        <label>
-          Filter by Status:
+        <div className="filter-group">
+          <label>Trạng thái:</label>
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
           >
-            <option value="All">All</option>
-            <option value="Pending">Pending</option>
-            <option value="Shipped">Shipped</option>
-            <option value="Paid">Paid</option>
-            <option value="Cancel">Cancel</option>
+            <option value="All">Tất cả</option>
+            <option value="pending">Chờ xử lý</option>
+            <option value="confirmed">Đã xác nhận</option>
+            <option value="shipping">Đang giao</option>
+            <option value="delivered">Đã giao</option>
+            <option value="cancelled">Đã hủy</option>
           </select>
-        </label>
+        </div>
 
-        <label>
-          Sort by Date:
+        <div className="filter-group">
+          <label>Sắp xếp:</label>
           <select
             value={sortOrder}
             onChange={(e) => setSortOrder(e.target.value)}
           >
-            <option value="desc">Newest First</option>
-            <option value="asc">Oldest First</option>
+            <option value="desc">Mới nhất</option>
+            <option value="asc">Cũ nhất</option>
           </select>
-        </label>
+        </div>
       </div>
 
       {filteredOrders.length === 0 ? (
-        <p>No orders found.</p>
+        <p className="no-orders">Bạn chưa có đơn hàng nào.</p>
       ) : (
         filteredOrders.map((order) => (
-          <div key={order.id} className="order-card">
+          <div key={order.orderId} className="order-card">
             <div className="order-header">
-              <span>Order #{order.id}</span>
-              <span>{order.date}</span>
+              <span className="order-id">Đơn hàng #{order.orderId}</span>
+              <span className="order-date">
+                {new Date(order.createdAt).toLocaleString("vi-VN")}
+              </span>
               <span
                 className="order-status"
-                style={{ backgroundColor: statusColors[order.status] }}
+                style={{
+                  backgroundColor: statusColors[order.status] || "#999",
+                }}
               >
-                {order.status}
+                {order.status ? order.status.toUpperCase() : "UNKNOWN"}
               </span>
             </div>
+
             <div className="order-products">
-              {order.products.map((p, idx) => (
-                <div key={idx} className="order-product">
-                  <span>
-                    {p.name} x{p.qty}
-                  </span>
-                  <span>{p.price.toLocaleString()}₫</span>
-                </div>
-              ))}
+              {order.orderItems &&
+                order.orderItems.map((item, idx) => (
+                  <div key={idx} className="order-product">
+                    <div className="product-info">
+                      <img
+                        src={getImageUrl(item.imageUrl)}
+                        alt={item.productName}
+                        className="order-img-thumb"
+                        onError={(e) => {
+                          e.target.src = DEFAULT_IMAGE;
+                        }}
+                      />
+                      <div className="product-details">
+                        <span className="product-name">{item.productName}</span>
+                        <span className="product-spec">
+                          Size: {item.size} | SL: {item.quantity}
+                        </span>
+                      </div>
+                    </div>
+                    <span className="product-price">
+                      {item.price.toLocaleString()}₫
+                    </span>
+                  </div>
+                ))}
             </div>
-            <div className="order-total">
-              <span>
-                <button>Feedback for Order</button>
-              </span>
-              <span>Total: {order.total.toLocaleString()}₫</span>
+
+            <div className="order-footer-info">
+              <div className="order-summary">
+                <div className="order-actions">
+                  {order.status === "pending" && (
+                    <button
+                      className="cancel-btn"
+                      onClick={() => handleCancelOrder(order.orderId)}
+                    >
+                      Hủy đơn
+                    </button>
+                  )}
+                </div>
+                <span className="total-price">
+                  Tổng cộng:{" "}
+                  <strong>{order.totalPrice.toLocaleString()}₫</strong>
+                </span>
+              </div>
             </div>
           </div>
         ))

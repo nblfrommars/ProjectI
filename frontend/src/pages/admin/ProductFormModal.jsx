@@ -17,6 +17,7 @@ export default function ProductFormModal({
     des: initialData?.des || "",
     stock: initialData?.stock || 0,
     category: initialData?.category || { categoryId: "" },
+    imageUrl: initialData?.imageUrl || "",
     image: null,
   });
 
@@ -71,6 +72,7 @@ export default function ProductFormModal({
         price: form.price,
         des: form.des,
         stock: form.stock,
+        imageUrl: form.imageUrl,
         category: { categoryId: finalCategoryId },
       };
 

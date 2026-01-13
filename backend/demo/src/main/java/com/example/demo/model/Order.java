@@ -29,6 +29,15 @@ public class Order {
 
     @Column(updatable = false)
     private Timestamp createdAt;
+    
+    @Column(nullable = false)
+    private String phoneNumber;
+
+    @Column(nullable = false)
+    private String address;
+
+    @Column(nullable = false)
+    private String paymentMethod;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true) 
     @JsonIgnoreProperties("order") 
@@ -82,4 +91,13 @@ public class Order {
     public void setOrderItems(List<OrderItem> orderItems) { 
         this.orderItems = orderItems; 
     }
+
+    public String getPhoneNumber() {return this.phoneNumber;}
+    public void setPhoneNumber(String phoneNumber) {this.phoneNumber = phoneNumber;}
+    
+    public String getAddress() {return this.address;}
+    public void setAddress(String address) {this.address = address;}
+
+    public String getPaymentMethod() { return paymentMethod; }
+    public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
 }

@@ -10,12 +10,17 @@ export default function Cart() {
   const [loading, setLoading] = useState(true);
   const user = JSON.parse(localStorage.getItem("user"));
 
+  const syncToLocalStorage = (cartData) => {
+    localStorage.setItem("cart", JSON.stringify(cartData));
+  };
+
   const fetchCart = async () => {
     if (!user) return;
     try {
       const res = await fetch(`${API_BASE_URL}/api/cart/${user.id}`);
       const data = await res.json();
       setCart(data);
+      syncToLocalStorage(data);
     } catch (err) {
       console.error("Lỗi fetch giỏ hàng:", err);
     } finally {
@@ -38,11 +43,11 @@ export default function Cart() {
         body: JSON.stringify({ quantity: newQty }),
       });
       if (res.ok) {
-        setCart(
-          cart.map((item) =>
-            item.cartId === cartId ? { ...item, quantity: newQty } : item
-          )
+        const updatedCart = cart.map((item) =>
+          item.cartId === cartId ? { ...item, quantity: newQty } : item
         );
+        setCart(updatedCart);
+        syncToLocalStorage(updatedCart);
       }
     } catch (err) {
       console.error("Lỗi cập nhật số lượng:", err);
@@ -56,7 +61,9 @@ export default function Cart() {
         method: "DELETE",
       });
       if (res.ok) {
-        setCart(cart.filter((item) => item.cartId !== cartId));
+        const updatedCart = cart.filter((item) => item.cartId !== cartId);
+        setCart(updatedCart);
+        syncToLocalStorage(updatedCart);
       }
     } catch (err) {
       console.error("Lỗi xóa sản phẩm:", err);
@@ -67,6 +74,14 @@ export default function Cart() {
     (sum, item) => sum + item.product.price * item.quantity,
     0
   );
+  const handleGoToCheckout = () => {
+    if (cart.length === 0) {
+      alert("Giỏ hàng của bạn đang trống!");
+      return;
+    }
+    syncToLocalStorage(cart);
+    navigate("/checkout");
+  };
 
   const getFullImageUrl = (url) => {
     if (!url) return "https://via.placeholder.com/80";
@@ -141,10 +156,7 @@ export default function Cart() {
               <span>Tạm tính:</span>
               <strong>{subtotal.toLocaleString()}₫</strong>
             </div>
-            <button
-              className="checkout-btn"
-              onClick={() => navigate("/checkout")}
-            >
+            <button className="checkout-btn" onClick={handleGoToCheckout}>
               Đặt Hàng
             </button>
           </div>

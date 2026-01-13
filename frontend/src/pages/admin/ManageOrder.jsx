@@ -51,7 +51,7 @@ const statusColors = {
 const ManageOrder = () => {
   const [orders, setOrders] = useState([]);
   const [filterStatus, setFilterStatus] = useState("All");
-  const [sortOrder, setSortOrder] = useState("desc"); //newest to oldest
+  const [sortOrder, setSortOrder] = useState("desc");
   useEffect(() => {
     setOrders(mockOrders);
   }, []);

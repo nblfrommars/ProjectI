@@ -9,7 +9,6 @@ const Header = ({ user, onLogout }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // 2. State quản lý từ khóa tìm kiếm
   const [searchTerm, setSearchTerm] = useState("");
 
   const displayName = user?.email ? user.email.split("@")[0] : "";
@@ -22,12 +21,9 @@ const Header = ({ user, onLogout }) => {
     fontWeight: location.pathname === path ? "bold" : "normal",
   });
 
-  // 3. Hàm xử lý khi nhấn Enter hoặc click nút tìm kiếm
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchTerm.trim()) {
-      // Điều hướng sang trang shop với tham số search
-      // Ví dụ: /shop?search=son+moi
       navigate(`/shop?search=${encodeURIComponent(searchTerm.trim())}`);
     }
   };
@@ -41,10 +37,9 @@ const Header = ({ user, onLogout }) => {
         padding: "0.8rem 2rem",
         borderBottom: "1px solid #ccc",
         background: "linear-gradient(to right,#ffcef5ff, #fff)",
-        gap: "20px", // Khoảng cách giữa các khối lớn
+        gap: "20px",
       }}
     >
-      {/* Logo */}
       <div style={{ flexShrink: 0 }}>
         <Link to="/">
           <img
@@ -55,7 +50,6 @@ const Header = ({ user, onLogout }) => {
         </Link>
       </div>
 
-      {/* Search Bar */}
       <form
         onSubmit={handleSearch}
         style={{
@@ -115,8 +109,6 @@ const Header = ({ user, onLogout }) => {
           </svg>
         </button>
       </form>
-
-      {/* Navigation */}
       <nav
         style={{
           display: "flex",

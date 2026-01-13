@@ -37,6 +37,7 @@ const ProductDetail = () => {
   }, [id]);
 
   const handleAddToCart = async () => {
+    if (isOutOfStock) return;
     if (!user) {
       alert("Vui lòng đăng nhập để thêm vào giỏ hàng!");
       navigate("/login");
@@ -70,6 +71,27 @@ const ProductDetail = () => {
       alert("Không thể kết nối đến server");
     }
   };
+  const handleBuyNow = () => {
+    if (isOutOfStock) return;
+
+    if (!user) {
+      alert("Vui lòng đăng nhập để đặt hàng!");
+      navigate("/login");
+      return;
+    }
+
+    const itemToCheckout = {
+      productId: product.productId,
+      productName: product.productName,
+      price: product.price,
+      imageUrl: product.imageUrl,
+      quantity: 1,
+      size: size,
+    };
+
+    navigate("/checkout", { state: { buyNowItem: [itemToCheckout] } });
+  };
+
   if (loading)
     return (
       <div style={{ textAlign: "center", padding: "50px" }}>Đang tải...</div>
@@ -80,6 +102,7 @@ const ProductDetail = () => {
         Sản phẩm không tồn tại!
       </div>
     );
+  const isOutOfStock = product.stock === 0 || product.stock === null;
   return (
     <div className="product-detail-container">
       <div className="product-detail-horizontal">
@@ -100,6 +123,13 @@ const ProductDetail = () => {
             {product.des || "Không có mô tả cho sản phẩm này."}
           </p>
 
+          <div className="status">
+            Trạng thái:{" "}
+            <span className={isOutOfStock ? "out-of-stock" : "in-stock"}>
+              {isOutOfStock ? "Hết hàng" : `Còn hàng`}
+            </span>
+          </div>
+
           <p className="price">
             {product.price ? product.price.toLocaleString() : "0"}₫
           </p>
@@ -117,9 +147,26 @@ const ProductDetail = () => {
             ))}
           </div>
 
-          <button className="add-to-cart" onClick={handleAddToCart}>
-            Thêm vào giỏ hàng
-          </button>
+          <div
+            className="product-actions"
+            style={{ display: "flex", gap: "10px", marginTop: "20px" }}
+          >
+            <button
+              className="add-to-cart"
+              onClick={handleAddToCart}
+              disabled={isOutOfStock}
+            >
+              Thêm vào giỏ hàng
+            </button>
+
+            <button
+              className="buy-now-btn"
+              disabled={isOutOfStock}
+              onClick={handleBuyNow}
+            >
+              Đặt hàng ngay
+            </button>
+          </div>
         </div>
       </div>
     </div>

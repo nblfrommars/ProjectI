@@ -1,128 +1,198 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import axios from "axios";
 import "../../styles/Checkout.css";
+
+const API_BASE_URL = "http://localhost:8080";
 
 const Checkout = ({ cart, clearCart }) => {
   const navigate = useNavigate();
+  const location = useLocation();
 
+  const buyNowItem = location.state?.buyNowItem;
   const cartFromStorage = JSON.parse(localStorage.getItem("cart") || "[]");
-  const safeCart = Array.isArray(cart) && cart.length ? cart : cartFromStorage;
 
-  const [address, setAddress] = useState("");
-  const [phone, setPhone] = useState("");
-  const [note, setNote] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState("cod"); // mac dinh thanh toan COD
+  const safeCart =
+    buyNowItem || (cart && cart.length > 0 ? cart : cartFromStorage);
+
+  const user = JSON.parse(localStorage.getItem("user") || "null");
+
+  const [address, setAddress] = useState(user?.address || "");
+  const [phone, setPhone] = useState(user?.phone || "");
+  const [paymentMethod, setPaymentMethod] = useState("COD");
+
+  const getProductId = (item) => item?.product?.productId || item?.productId;
+
+  const getQuantity = (item) => Number(item?.quantity || item?.qty || 0);
+  const getPrice = (item) => Number(item?.price || item?.product?.price || 0);
 
   const totalPrice = safeCart.reduce((sum, item) => {
-    const qty = Number(item.qty) || 0;
-    const price = Number(item.price) || 0;
-    return sum + price * qty;
+    const q = getQuantity(item);
+    const p = getPrice(item);
+    return sum + p * q;
   }, 0);
 
-  const handleConfirm = () => {
-    if (!address.trim()) {
-      alert("Vui lòng nhập địa chỉ nhận hàng!");
-      return;
-    }
-    if (!phone.trim()) {
-      alert("Vui lòng nhập số điện thoại!");
+  const handleConfirm = async () => {
+    if (!user) {
+      alert("Vui lòng đăng nhập để đặt hàng!");
+      navigate("/login");
       return;
     }
 
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-    const email = user.email || "không xác định";
+    if (!address.trim() || !phone.trim()) {
+      alert("Vui lòng nhập đầy đủ thông tin giao hàng!");
+      return;
+    }
 
-    alert(
-      `Đặt hàng thành công! Email xác nhận đã gửi đến: ${email}\nPhương thức: ${paymentMethod.toUpperCase()}`
-    );
+    const orderRequest = {
+      userId: user.id || user.userId,
+      phoneNumber: phone,
+      address: address,
+      paymentMethod: paymentMethod,
+      items: safeCart.map((item) => ({
+        productId: item?.product?.productId || item?.productId,
+        quantity: getQuantity(item),
+        size: item.size || "M",
+      })),
+    };
 
-    clearCart?.();
-    navigate("/");
+    try {
+      const response = await axios.post(
+        `${API_BASE_URL}/api/orders/create`,
+        orderRequest
+      );
+
+      if (response.status === 200 || response.status === 201) {
+        if (!buyNowItem) {
+          try {
+            await axios.delete(
+              `${API_BASE_URL}/api/cart/clear/${user.id || user.userId}` //xoa gio hang o ca local va database neu dat hang o cart
+            );
+            clearCart?.();
+            localStorage.removeItem("cart");
+          } catch (clearError) {
+            console.error("Lỗi khi xóa giỏ hàng DB:", clearError);
+          }
+        }
+        alert("Đặt hàng thành công!");
+        navigate("/orders");
+      }
+    } catch (error) {
+      console.error("Lỗi khi đặt hàng:", error);
+      alert("Đặt hàng thất bại: " + (error.response?.data || "Lỗi máy chủ"));
+    }
   };
 
-  if (!safeCart.length)
-    return <p style={{ textAlign: "center" }}>Giỏ hàng đang trống.</p>;
+  const getImageUrl = (url) => {
+    if (!url) return "https://via.placeholder.com/80?text=No+Image";
+    if (url.startsWith("http")) return url;
+    return `${API_BASE_URL}${url}`;
+  };
+
+  if (!safeCart || safeCart.length === 0) {
+    return (
+      <div className="checkout-empty">
+        <p>Giỏ hàng của bạn đang trống.</p>
+        <button onClick={() => navigate("/")}>Tiếp tục mua sắm</button>
+      </div>
+    );
+  }
 
   return (
     <div className="checkout-page">
-      <div className="checkout-left">
-        <h3>Giỏ hàng</h3>
-        {safeCart.map((item) => {
-          const price = Number(item.price) || 0;
-          const qty = Number(item.qty) || 0;
-          return (
-            <div className="checkout-item" key={`${item.id}-${item.size}`}>
-              <img
-                src={item.imageUrl || "https://via.placeholder.com/80"}
-                alt={item.productName}
-                onError={(e) => {
-                  e.target.src = "https://via.placeholder.com/80";
-                }}
-              />
-              <div className="item-info">
-                <p className="item-name">{item.productName}</p>
-                <p>Size: {item.size}</p>
-                <p>Số lượng: {qty}</p>
-                <p>{(price * qty).toLocaleString()}₫</p>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      <div className="checkout-container">
+        <div className="checkout-left">
+          <h3>{buyNowItem ? "Sản phẩm mua ngay" : "Danh sách sản phẩm"}</h3>
+          <div className="checkout-items-list">
+            {safeCart.map((item, index) => {
+              const pid = getProductId(item);
+              const qty = Number(getQuantity(item)) || 0;
+              const price = Number(getPrice(item)) || 0;
 
-      <div className="checkout-right">
-        <h3>Đơn hàng</h3>
-        <p>
-          <strong>Tổng tiền: </strong>
-          {totalPrice.toLocaleString()}₫
-        </p>
-
-        <label>Địa chỉ nhận hàng</label>
-        <input
-          type="text"
-          placeholder="Nhập địa chỉ"
-          value={address}
-          onChange={(e) => setAddress(e.target.value)}
-        />
-
-        <label>Số điện thoại</label>
-        <input
-          type="text"
-          placeholder="Nhập số điện thoại"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-        />
-
-        <label>Ghi chú đơn hàng</label>
-        <textarea
-          placeholder="Ghi chú"
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
-        />
-        {/*chon thanh toan*/}
-        <div className="payment-section">
-          <h4>Chọn phương thức thanh toán</h4>
-          <div className="payment-buttons">
-            <button
-              type="button"
-              className={paymentMethod === "cod" ? "selected" : ""}
-              onClick={() => setPaymentMethod("cod")}
-            >
-              Thanh toán khi nhận hàng (COD)
-            </button>
-            <button
-              type="button"
-              className={paymentMethod === "momo" ? "selected" : ""}
-              onClick={() => setPaymentMethod("momo")}
-            >
-              Thanh toán online
-            </button>
+              return (
+                <div className="checkout-item" key={`${pid}-${index}`}>
+                  <img
+                    src={getImageUrl(item.imageUrl || item.product?.imageUrl)}
+                    alt={item.productName || item.product?.productName}
+                    onError={(e) => {
+                      e.target.src = "https://via.placeholder.com/80";
+                    }}
+                  />
+                  <div className="item-info">
+                    <p className="item-name">
+                      {item.productName || item.product?.productName}
+                    </p>
+                    <p className="item-spec">
+                      Size: {item.size} | SL: {getQuantity(item)}
+                    </p>
+                    <p className="item-price">
+                      {(getPrice(item) * getQuantity(item)).toLocaleString()}₫
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 
-        <button className="confirm-btn" onClick={handleConfirm}>
-          Xác nhận đặt hàng
-        </button>
+        <div className="checkout-right">
+          <h3>Thông tin giao hàng</h3>
+
+          <div className="summary-card">
+            <div className="summary-row total">
+              <span>Tổng thanh toán:</span>
+              <span>{totalPrice.toLocaleString()}₫</span>
+            </div>
+          </div>
+
+          <div className="checkout-form">
+            <div className="form-group">
+              <label>Địa chỉ nhận hàng</label>
+              <input
+                type="text"
+                placeholder="Số nhà, tên đường, phường/xã..."
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Số điện thoại</label>
+              <input
+                type="text"
+                placeholder="Nhập số điện thoại nhận hàng"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+              />
+            </div>
+
+            <div className="payment-method">
+              <h4>Phương thức thanh toán</h4>
+              <div className="payment-options">
+                <button
+                  className={`method-btn ${
+                    paymentMethod === "COD" ? "active" : ""
+                  }`}
+                  onClick={() => setPaymentMethod("COD")}
+                >
+                  Tiền mặt (COD)
+                </button>
+                <button
+                  className={`method-btn ${
+                    paymentMethod === "VNPay" ? "active" : ""
+                  }`}
+                  onClick={() => setPaymentMethod("VNPAY")}
+                >
+                  Chuyển khoản / Ví
+                </button>
+              </div>
+            </div>
+
+            <button className="btn-confirm-order" onClick={handleConfirm}>
+              XÁC NHẬN ĐẶT HÀNG
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

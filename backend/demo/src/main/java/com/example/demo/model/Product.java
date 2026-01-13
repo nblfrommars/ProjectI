@@ -1,11 +1,13 @@
 package com.example.demo.model;
 
 import jakarta.persistence.*;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
+import java.math.BigDecimal;
 @Entity
 @Table(name = "products")
 public class Product {
@@ -22,7 +24,8 @@ public class Product {
     @JsonIgnoreProperties("products") 
     private Category category;
 
-    private Double price;
+    @Column(precision = 10, scale = 2)
+    private BigDecimal price;
 
     @Column(columnDefinition = "TEXT")
     private String des;
@@ -58,8 +61,8 @@ public class Product {
     public Category getCategory() { return category; }
     public void setCategory(Category category) { this.category = category; }
 
-    public Double getPrice() { return price; }
-    public void setPrice(Double price) { this.price = price; }
+    public BigDecimal getPrice() { return price; }
+    public void setPrice(BigDecimal price) { this.price = price; }
 
     public String getDes() { return des; }
     public void setDes(String des) { this.des = des; }

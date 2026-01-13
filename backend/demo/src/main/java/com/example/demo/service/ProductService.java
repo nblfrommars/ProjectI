@@ -50,14 +50,13 @@ public class ProductService {
         p.setProductName(details.getProductName());
         p.setPrice(details.getPrice());
         p.setDes(details.getDes());
-        p.setImageUrl(details.getImageUrl());
         p.setStock(details.getStock());
         
-        if (details.getCategory() != null && details.getCategory().getCategoryId() != null) {
-            Category cat = categoryRepository.findById(details.getCategory().getCategoryId())
-                    .orElseThrow(() -> new RuntimeException("Danh mục không hợp lệ"));
-            p.setCategory(cat);
-        }
+         if (details.getCategory() != null && details.getCategory().getCategoryId() != null) {
+        Category cat = categoryRepository.findById(details.getCategory().getCategoryId())
+                .orElseThrow(() -> new RuntimeException("Danh mục không hợp lệ"));
+        p.setCategory(cat);
+    }
         if (imageFile != null && !imageFile.isEmpty()) {
             String fileName = fileStorageService.storeFile(imageFile);
             p.setImageUrl("/uploads/" + fileName);
