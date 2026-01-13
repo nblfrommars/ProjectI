@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "../../styles/ProductDetail.css";
-import { addToCart } from "../../utils/cartStorage";
 const API_BASE_URL = "http://localhost:8080";
 const ProductDetail = () => {
   const { id } = useParams();
@@ -37,29 +36,43 @@ const ProductDetail = () => {
     fetchProduct();
   }, [id]);
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!user) {
+      alert("Vui lòng đăng nhập để thêm vào giỏ hàng!");
       navigate("/login");
       return;
     }
-
-    addToCart({
+    const userId = user.id || user.userId;
+    const cartItem = {
+      userId: user.id,
       productId: product.productId,
-      productName: product.productName,
-      price: product.price,
-      imageUrl: getFullImageUrl(product.imageUrl),
+      quantity: 1,
       size: size,
-      qty: 1,
-    });
+    };
 
-    alert(`Đã thêm ${product.productName} (size ${size}) vào giỏ!`);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/cart/add`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(cartItem),
+      });
+
+      if (response.ok) {
+        alert(`Đã thêm ${product.productName} (size ${size}) vào giỏ hàng!`);
+      } else {
+        const errorData = await response.json();
+        alert("Lỗi: " + errorData.message);
+      }
+    } catch (err) {
+      console.error("Lỗi khi thêm vào giỏ hàng:", err);
+      alert("Không thể kết nối đến server");
+    }
   };
-
   if (loading)
     return (
-      <div style={{ textAlign: "center", padding: "50px" }}>
-        Đang tải thông tin sản phẩm...
-      </div>
+      <div style={{ textAlign: "center", padding: "50px" }}>Đang tải...</div>
     );
   if (!product)
     return (
@@ -67,7 +80,6 @@ const ProductDetail = () => {
         Sản phẩm không tồn tại!
       </div>
     );
-
   return (
     <div className="product-detail-container">
       <div className="product-detail-horizontal">

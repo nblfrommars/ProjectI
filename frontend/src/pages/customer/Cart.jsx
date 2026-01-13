@@ -1,82 +1,135 @@
 import React, { useState, useEffect } from "react";
-import { getCart, saveCart } from "../../utils/cartStorage";
 import { useNavigate } from "react-router-dom";
 import "../../styles/Cart.css";
+
+const API_BASE_URL = "http://localhost:8080";
 
 export default function Cart() {
   const navigate = useNavigate();
   const [cart, setCart] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const user = JSON.parse(localStorage.getItem("user"));
+
+  const fetchCart = async () => {
+    if (!user) return;
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/cart/${user.id}`);
+      const data = await res.json();
+      setCart(data);
+    } catch (err) {
+      console.error("Lỗi fetch giỏ hàng:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    setCart(getCart());
+    fetchCart();
   }, []);
 
-  const updateCart = (newCart) => {
-    setCart(newCart);
-    saveCart(newCart);
-  };
+  const changeQty = async (cartId, currentQty, amount) => {
+    const newQty = currentQty + amount;
+    if (newQty < 1) return;
 
-  const changeQty = (productId, size, amount) => {
-    const updated = cart.map((item) => {
-      if (item.productId === productId && item.size === size) {
-        return { ...item, qty: Math.max(1, item.qty + amount) };
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/cart/update/${cartId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ quantity: newQty }),
+      });
+      if (res.ok) {
+        setCart(
+          cart.map((item) =>
+            item.cartId === cartId ? { ...item, quantity: newQty } : item
+          )
+        );
       }
-      return item;
-    });
-    updateCart(updated);
+    } catch (err) {
+      console.error("Lỗi cập nhật số lượng:", err);
+    }
   };
 
-  const removeItem = (productId, size) => {
-    const updated = cart.filter(
-      (item) => !(item.productId === productId && item.size === size)
-    );
-    updateCart(updated);
+  const removeItem = async (cartId) => {
+    if (!window.confirm("Bạn có chắc muốn xóa sản phẩm này?")) return;
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/cart/remove/${cartId}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        setCart(cart.filter((item) => item.cartId !== cartId));
+      }
+    } catch (err) {
+      console.error("Lỗi xóa sản phẩm:", err);
+    }
   };
 
-  const subtotal = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+  const subtotal = cart.reduce(
+    (sum, item) => sum + item.product.price * item.quantity,
+    0
+  );
+
+  const getFullImageUrl = (url) => {
+    if (!url) return "https://via.placeholder.com/80";
+    if (url.startsWith("http")) return url;
+    return `${API_BASE_URL}${url}`;
+  };
+
+  if (loading)
+    return <div className="cart-container">Đang tải giỏ hàng...</div>;
 
   return (
     <div className="cart-container">
       <h1>Giỏ hàng</h1>
 
-      {cart.length === 0 ? (
+      {!user ? (
+        <p className="empty">Vui lòng đăng nhập để xem giỏ hàng.</p>
+      ) : cart.length === 0 ? (
         <p className="empty">Giỏ hàng đang trống.</p>
       ) : (
         <>
           <ul className="cart-list">
             {cart.map((item) => (
-              <li key={`${item.productId}-${item.size}`} className="cart-item">
+              <li key={item.cartId} className="cart-item">
                 <div className="left">
                   <img
-                    src={item.imageUrl || "https://via.placeholder.com/80"}
-                    alt={item.productName}
+                    src={getFullImageUrl(item.product.imageUrl)}
+                    alt={item.product.productName}
                     className="thumb"
                     onError={(e) => {
                       e.target.src = "https://via.placeholder.com/80";
                     }}
                   />
                   <div>
-                    <p className="name">{item.name}</p>
+                    <p className="name">{item.product.productName}</p>
                     <p className="size">Size: {item.size}</p>
-                    <p className="price">{item.price.toLocaleString()}₫</p>
+                    <p className="price">
+                      {item.product.price.toLocaleString()}₫
+                    </p>
                   </div>
                 </div>
 
                 <div className="right">
                   <div className="qty">
-                    <button onClick={() => changeQty(item.id, item.size, -1)}>
-                      -
+                    <button
+                      onClick={() => changeQty(item.cartId, item.quantity, -1)}
+                    >
+                      {" "}
+                      -{" "}
                     </button>
-                    <span>{item.qty}</span>
-                    <button onClick={() => changeQty(item.id, item.size, 1)}>
-                      +
+                    <span>{item.quantity}</span>
+                    <button
+                      onClick={() => changeQty(item.cartId, item.quantity, 1)}
+                    >
+                      {" "}
+                      +{" "}
                     </button>
                   </div>
                   <button
                     className="remove"
-                    onClick={() => removeItem(item.id, item.size)}
+                    onClick={() => removeItem(item.cartId)}
                   >
-                    Xóa
+                    {" "}
+                    Xóa{" "}
                   </button>
                 </div>
               </li>
@@ -88,7 +141,6 @@ export default function Cart() {
               <span>Tạm tính:</span>
               <strong>{subtotal.toLocaleString()}₫</strong>
             </div>
-
             <button
               className="checkout-btn"
               onClick={() => navigate("/checkout")}
