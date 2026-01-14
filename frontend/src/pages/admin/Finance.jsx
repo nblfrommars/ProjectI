@@ -1,27 +1,92 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "../../styles/Finance.css";
+import axios from "axios";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 
 const Finance = () => {
-  const mockData = [
-    { date: "2026-01-10", orderCount: 15, revenue: 5200000 },
-    { date: "2026-01-11", orderCount: 22, revenue: 8450000 },
-    { date: "2026-01-12", orderCount: 18, revenue: 6100000 },
-  ];
+  const [startDate, setStartDate] = useState(() => {
+    const d = new Date();
+    return new Date(d.getFullYear(), d.getMonth(), 1)
+      .toISOString()
+      .split("T")[0];
+  });
+  const [endDate, setEndDate] = useState(
+    new Date().toISOString().split("T")[0]
+  );
 
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [data, setData] = useState(mockData);
+  const [summary, setSummary] = useState({ orderCount: 0, totalRevenue: 0 });
+  const [productData, setProductData] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  const totalRevenue = data.reduce((sum, item) => sum + item.revenue, 0);
-  const totalOrders = data.reduce((sum, item) => sum + item.orderCount, 0);
+  const fetchFinanceData = async () => {
+    if (!startDate || !endDate) {
+      alert("Vui lòng chọn đầy đủ khoảng thời gian");
+      return;
+    }
 
-  const handleFilter = () => {
-    console.log("Lọc từ ngày:", startDate, "đến ngày:", endDate);
+    setLoading(true);
+    try {
+      const [summaryRes, productRes] = await Promise.all([
+        axios.get(`http://localhost:8080/api/statistics/range-summary`, {
+          params: { startDate, endDate },
+        }),
+        axios.get(`http://localhost:8080/api/statistics/product-report`, {
+          params: { startDate, endDate },
+        }),
+      ]);
+
+      setSummary({
+        orderCount: summaryRes.data.orderCount,
+        totalRevenue: summaryRes.data.totalRevenue || 0,
+      });
+      setProductData(productRes.data);
+    } catch (error) {
+      console.error("Lỗi khi tải báo cáo tài chính:", error);
+      alert("Không thể tải dữ liệu báo cáo.");
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    fetchFinanceData();
+  }, []);
+  const handleExportExcel = () => {
+    if (productData.length === 0) {
+      alert("Không có dữ liệu để xuất báo cáo!");
+      return;
+    }
+    const headerInfo = [
+      ["BÁO CÁO TÀI CHÍNH"],
+      [`Thời gian: từ ${startDate} đến ${endDate}`],
+      [`Số đơn hàng: ${summary.orderCount}`],
+      [`Tổng doanh thu: ${summary.totalRevenue.toLocaleString()} VNĐ`],
+      [""],
+      ["STT", "TÊN SẢN PHẨM", "DOANH SỐ", "DOANH THU"],
+    ];
+    const tableData = productData.map((item, index) => [
+      index + 1,
+      item.productName,
+      item.totalQuantity,
+      item.totalRevenue,
+    ]);
+    const finalData = [...headerInfo, ...tableData];
+    const worksheet = XLSX.utils.aoa_to_sheet(finalData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "BaoCaoTaiChinh");
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: "xlsx",
+      type: "array",
+    });
+    const blob = new Blob([excelBuffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8",
+    });
+    saveAs(blob, `Bao-cao-tai-chinh-${startDate}-den-${endDate}.xlsx`);
   };
 
   return (
     <div className="finance-container">
-      <h2 className="finance-title">BÁO CÁO DOANH THU</h2>
+      <h2 className="finance-title">Tình hình tài chính của cửa hàng</h2>
 
       <div className="filter-section">
         <div className="filter-group">
@@ -40,45 +105,66 @@ const Finance = () => {
             onChange={(e) => setEndDate(e.target.value)}
           />
         </div>
-        <button className="btn-filter" onClick={handleFilter}>
-          LỌC DỮ LIỆU
+        <button
+          className="btn-filter"
+          onClick={fetchFinanceData}
+          disabled={loading}
+        >
+          {loading ? "ĐANG TẢI..." : "LỌC DỮ LIỆU"}
         </button>
-        <button className="btn-export">XUẤT BÁO CÁO (EXCEL)</button>
+        <button className="btn-export" onClick={handleExportExcel}>
+          XUẤT BÁO CÁO (EXCEL)
+        </button>
       </div>
 
       <div className="summary-grid">
         <div className="summary-box box-black">
           <span className="label">TỔNG ĐƠN HÀNG</span>
-          <span className="value">{totalOrders}</span>
+          <span className="value">{summary.orderCount}</span>
         </div>
         <div className="summary-box box-pink">
           <span className="label">TỔNG DOANH THU</span>
-          <span className="value">{totalRevenue.toLocaleString()}₫</span>
+          <span className="value">
+            {summary.totalRevenue.toLocaleString()}₫
+          </span>
         </div>
       </div>
 
       <div className="table-wrapper">
+        <h3>BÁO CÁO CHI TIẾT</h3>
         <table className="finance-table">
           <thead>
             <tr>
-              <th>NGÀY</th>
-              <th>SỐ LƯỢNG ĐƠN</th>
-              <th>DOANH THU NGÀY</th>
-              <th>CHI TIẾT</th>
+              <th>STT</th>
+              <th>TÊN SẢN PHẨM</th>
+              <th>SỐ LƯỢNG ĐÃ BÁN</th>
+              <th>DOANH THU</th>
             </tr>
           </thead>
           <tbody>
-            {data.map((item, index) => (
-              <tr key={index}>
-                <td>{item.date}</td>
-                <td>{item.orderCount}</td>
-                <td>{item.revenue.toLocaleString()}₫</td>
-                <td>
-                  <button className="btn-view">Xem đơn</button>
+            {productData.length === 0 ? (
+              <tr>
+                <td
+                  colSpan="4"
+                  style={{ textAlign: "center", padding: "20px" }}
+                >
+                  Không có dữ liệu bán hàng trong khoảng thời gian này.
                 </td>
               </tr>
-            ))}
+            ) : (
+              productData.map((item, index) => (
+                <tr key={index}>
+                  <td style={{ textAlign: "center" }}>{index + 1}</td>
+                  <td style={{ fontWeight: "bold" }}>{item.productName}</td>
+                  <td style={{ textAlign: "center" }}>{item.totalQuantity}</td>
+                  <td style={{ textAlign: "right" }}>
+                    {item.totalRevenue.toLocaleString()}₫
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
+          {productData.length > 0}
         </table>
       </div>
     </div>

@@ -106,7 +106,7 @@ const Specification = () => {
           <input
             type="number"
             className="input-field"
-            placeholder="170"
+            placeholder="Nhập chiều cao..."
             value={height}
             onChange={(e) => setHeight(e.target.value)}
           />
@@ -117,7 +117,7 @@ const Specification = () => {
           <input
             type="number"
             className="input-field"
-            placeholder="65"
+            placeholder="Nhập cân nặng..."
             value={weight}
             onChange={(e) => setWeight(e.target.value)}
           />

@@ -144,7 +144,7 @@
   margin-top: 15px;
 }
 .total-price strong {
-  color: #d32f2f;
+  color: #100606;
   font-size: 18px;
 }
 
@@ -161,10 +161,33 @@
   color: #666;
 }
 
-.cancel-btn {
+.cancel-btn,
+.received-btn {
   margin-right: auto;
 }
+.received-btn {
+  border: 0px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 15px;
+  background-color: #579259;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 5px;
+}
 
+.received-btn:hover {
+  transform: translateY(-2px);
+  background-color: #437a46;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.received-btn:active {
+  transform: translateY(0);
+}
 .order-actions {
   display: flex;
   gap: 10px;

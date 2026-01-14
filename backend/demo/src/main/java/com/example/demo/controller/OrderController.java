@@ -5,6 +5,7 @@ import com.example.demo.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyEmitter;
 
 import java.util.List;
 @RestController
@@ -27,6 +28,11 @@ public class OrderController {
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<OrderDTO.Response>> getUserOrders(@PathVariable Integer userId) {
         List<OrderDTO.Response> orders = orderService.getOrdersByUserId(userId);
+        return ResponseEntity.ok(orders);
+    }
+    @GetMapping
+    public ResponseEntity<List<OrderDTO.Response>> getAllOrders(){
+        List<OrderDTO.Response> orders = orderService.getAllOrders();
         return ResponseEntity.ok(orders);
     }
 

@@ -74,10 +74,20 @@ public class OrderService {
                 .orElseThrow(() -> new RuntimeException("Đơn hàng không tồn tại"));
         return convertToResponseDTO(order);
     }
+    
+    public List<OrderDTO.Response> getAllOrders (){
+        return orderRepository.findAll()
+        .stream()
+        .map(this::convertToResponseDTO)
+        .collect(Collectors.toList());
+    }
 
     private OrderDTO.Response convertToResponseDTO(Order order) {
         OrderDTO.Response res = new OrderDTO.Response();
         res.setOrderId(order.getOrderId());
+        if (order.getUser() != null) {
+        res.setUserId(order.getUser().getId()); 
+    }
         res.setTotalPrice(order.getTotalPrice());
         res.setStatus(order.getStatus());
         res.setCreatedAt(order.getCreatedAt());

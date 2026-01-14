@@ -1,13 +1,41 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "../../styles/Dashboard.css";
+import axios from "axios";
 
 const Dashboard = () => {
-  const stats = {
-    dailyOrders: 25,
-    revenue: 12500000,
-    topProduct: "Váy xanh ngọc xinh yêu GLOWAY",
-    lastUpdated: "12/01/2026 01:45",
+  const [stats, setStats] = useState({
+    dailyOrders: 0,
+    revenue: 0,
+    topProduct: "Đang tải...",
+    lastUpdated: "",
+  });
+  const [loading, setLoading] = useState(true);
+  const fetchTodayStats = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:8080/api/statistics/today"
+      );
+      const data = response.data;
+
+      setStats({
+        dailyOrders: data.orderCount,
+        revenue: data.totalRevenue || 0,
+        topProduct:
+          data.bestSellingProducts.length > 0
+            ? data.bestSellingProducts.join(", ")
+            : "Chưa có đơn hàng",
+        lastUpdated: new Date().toLocaleString("vi-VN"),
+      });
+    } catch (error) {
+      console.error("Lỗi khi lấy thống kê Dashboard:", error);
+      setStats((prev) => ({ ...prev, topProduct: "Lỗi tải dữ liệu" }));
+    } finally {
+      setLoading(false);
+    }
   };
+  useEffect(() => {
+    fetchTodayStats();
+  }, []);
 
   return (
     <div className="dashboard-wrapper">
@@ -17,7 +45,9 @@ const Dashboard = () => {
         <div className="dashboard-box box-blue">
           <div className="box-content">
             <span className="box-label">ĐƠN HÀNG HÔM NAY</span>
-            <span className="box-number">{stats.dailyOrders}</span>
+            <span className="box-number">
+              {loading ? "..." : stats.dailyOrders}
+            </span>
           </div>
           <div className="box-tag">Đơn hàng mới</div>
         </div>
@@ -25,7 +55,7 @@ const Dashboard = () => {
           <div className="box-content">
             <span className="box-label">DOANH THU HÀNG NGÀY</span>
             <span className="box-number">
-              {stats.revenue.toLocaleString()}₫
+              {loading ? "..." : `${stats.revenue.toLocaleString()}₫`}
             </span>
           </div>
           <div className="box-tag">Tổng doanh thu</div>
@@ -33,13 +63,19 @@ const Dashboard = () => {
         <div className="dashboard-box box-pink">
           <div className="box-content">
             <span className="box-label">BÁN CHẠY NHẤT</span>
-            <span className="box-product-name">{stats.topProduct}</span>
+            <span className="box-product-name">
+              {loading ? "Đang tải..." : stats.topProduct}
+            </span>
           </div>
           <div className="box-tag">Sản phẩm tiêu biểu</div>
         </div>
       </div>
 
-      <p className="update-time">Cập nhật lần cuối: {stats.lastUpdated}</p>
+      <p className="update-time">
+        {stats.lastUpdated
+          ? `Cập nhật lần cuối: ${stats.lastUpdated}`
+          : "Đang kết nối máy chủ..."}
+      </p>
     </div>
   );
 };

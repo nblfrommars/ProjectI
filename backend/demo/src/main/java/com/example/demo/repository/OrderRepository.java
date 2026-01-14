@@ -6,4 +6,5 @@ import java.util.List;
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Integer>{
     List<Order> findByUser_IdOrderByCreatedAtDesc(Integer userId);
+    List<Order> findByCreatedAtBetween(java.sql.Timestamp start, java.sql.Timestamp end);
 }

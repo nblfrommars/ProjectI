@@ -16,6 +16,7 @@ import Login from "../pages/Login";
 import PrivateRoute from "../components/PrivateRoute";
 import Specification from "../pages/customer/Specification";
 import OrderHistory from "../pages/customer/OrderHistory";
+import OrderDetail from "../pages/admin/OrderDetail";
 const AppRoutes = () => {
   return (
     <Routes>
@@ -69,6 +70,7 @@ const AppRoutes = () => {
         <Route path="finance" element={<Finance />} />
         <Route path="inventory" element={<ManageInventory />} />
         <Route path="orders" element={<ManageOrder />} />
+        <Route path="orders/:orderId" element={<OrderDetail />} />
       </Route>
     </Routes>
   );

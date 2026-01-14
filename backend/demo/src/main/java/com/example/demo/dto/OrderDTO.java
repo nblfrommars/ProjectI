@@ -49,6 +49,7 @@ public class OrderDTO {
 
     public static class Response {
         private Integer orderId;
+        private Integer userId;
         private BigDecimal totalPrice;
         private String status;
         private Timestamp createdAt;
@@ -82,6 +83,9 @@ public class OrderDTO {
 
         public String getPaymentMethod() { return paymentMethod; }
         public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
+
+        public Integer getUserId() {return userId;}
+        public void setUserId(Integer userId) {this.userId = userId;}
     }
 
     public static class OrderItemResponse {

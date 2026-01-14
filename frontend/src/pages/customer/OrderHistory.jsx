@@ -14,7 +14,6 @@ const statusColors = {
 };
 
 const OrderHistory = () => {
-  // Lấy userId từ localStorage ngay khi khởi tạo state
   const [userId] = useState(() => {
     const saved = localStorage.getItem("user");
     if (saved) {
@@ -65,11 +64,16 @@ const OrderHistory = () => {
       const dateB = new Date(b.createdAt);
       return sortOrder === "desc" ? dateB - dateA : dateA - dateB;
     });
+  const updateLocalOrderStatus = (orderId, newStatus) => {
+    setOrders((prevOrders) =>
+      prevOrders.map((order) =>
+        order.orderId === orderId ? { ...order, status: newStatus } : order
+      )
+    );
+  };
 
   const handleCancelOrder = async (orderId) => {
-    const confirmCancel = window.confirm(
-      "Bạn có chắc chắn muốn hủy đơn hàng này không? Số lượng sản phẩm sẽ được hoàn lại kho."
-    );
+    const confirmCancel = window.confirm("Xác nhận hủy đơn?");
 
     if (confirmCancel) {
       try {
@@ -96,6 +100,23 @@ const OrderHistory = () => {
       }
     }
   };
+  const handleReceivedOrder = async (orderId) => {
+    const confirmReceived = window.confirm("Xác nhận đã nhận được hàng?");
+
+    if (confirmReceived) {
+      try {
+        await axios.put(
+          `http://localhost:8080/api/orders/${orderId}/status`,
+          null,
+          { params: { status: "delivered" } }
+        );
+        updateLocalOrderStatus(orderId, "delivered");
+      } catch (error) {
+        console.error("Lỗi xác nhận nhận hàng:", error);
+        alert("Có lỗi xảy ra, vui lòng thử lại sau.");
+      }
+    }
+  };
 
   if (loading)
     return <div className="loading">Đang tải lịch sử đơn hàng...</div>;
@@ -110,7 +131,7 @@ const OrderHistory = () => {
 
   return (
     <div className="order-history-container">
-      <h2>Lịch Sử Đơn Hàng</h2>
+      <h2>Đơn Hàng Của Bạn</h2>
 
       <div className="order-filters">
         <div className="filter-group">
@@ -122,8 +143,8 @@ const OrderHistory = () => {
             <option value="All">Tất cả</option>
             <option value="pending">Chờ xử lý</option>
             <option value="confirmed">Đã xác nhận</option>
-            <option value="shipping">Đang giao</option>
-            <option value="delivered">Đã giao</option>
+            <option value="shipped">Đã giao</option>
+            <option value="delivered">Đã hoàn thành</option>
             <option value="cancelled">Đã hủy</option>
           </select>
         </div>
@@ -196,6 +217,14 @@ const OrderHistory = () => {
                       onClick={() => handleCancelOrder(order.orderId)}
                     >
                       Hủy đơn
+                    </button>
+                  )}
+                  {order.status === "shipped" && (
+                    <button
+                      className="received-btn"
+                      onClick={() => handleReceivedOrder(order.orderId)}
+                    >
+                      Đã nhận hàng
                     </button>
                   )}
                 </div>
