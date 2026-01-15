@@ -11,12 +11,12 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.management.RuntimeErrorException;
 @Service
 public class OrderService {
     @Autowired private OrderRepository orderRepository;
     @Autowired private UserRepository userRepository;
-    @Autowired private ProductRepository productRepository;
+    
+    @Autowired private ProductVariantRepository variantRepository; 
 
     @Transactional
     public OrderDTO.Response createOrder(OrderDTO.Request request) {
@@ -33,23 +33,26 @@ public class OrderService {
         BigDecimal totalOrderPrice = BigDecimal.ZERO;
 
         for (OrderDTO.OrderItemRequest itemReq : request.getItems()) {
-            Product product = productRepository.findById(itemReq.getProductId())
-                    .orElseThrow(() -> new RuntimeException("Sản phẩm ID " + itemReq.getProductId() + " không tồn tại"));
+            ProductVariant variant = variantRepository.findById(itemReq.getVariantId())
+                    .orElseThrow(() -> new RuntimeException("Biến thể ID " + itemReq.getVariantId() + " không tồn tại"));
 
-            if (product.getStock() < itemReq.getQuantity()) {
-                throw new RuntimeException("Sản phẩm " + product.getProductName() + " không đủ hàng");
+            if (variant.getStock() < itemReq.getQuantity()) {
+                throw new RuntimeException("Sản phẩm " + variant.getProduct().getProductName() + 
+                                           " size " + variant.getSize() + " không đủ hàng");
             }
-            product.setStock(product.getStock() - itemReq.getQuantity());
-            productRepository.save(product);
+
+            variant.setStock(variant.getStock() - itemReq.getQuantity());
+            variantRepository.save(variant);
 
             OrderItem orderItem = new OrderItem();
             orderItem.setOrder(order);
-            orderItem.setProduct(product);
+            orderItem.setProductVariant(variant);
             orderItem.setQuantity(itemReq.getQuantity());
-            orderItem.setPrice(product.getPrice());
-            orderItem.setSize(itemReq.getSize());
             
-            BigDecimal subTotal = product.getPrice().multiply(new BigDecimal(itemReq.getQuantity()));
+            BigDecimal unitPrice = variant.getProduct().getPrice();
+            orderItem.setPrice(unitPrice);
+            
+            BigDecimal subTotal = unitPrice.multiply(new BigDecimal(itemReq.getQuantity()));
             orderItem.setSubTotal(subTotal);
             
             totalOrderPrice = totalOrderPrice.add(subTotal);
@@ -77,18 +80,18 @@ public class OrderService {
     
     public List<OrderDTO.Response> getAllOrders (){
         return orderRepository.findAll()
-        .stream()
-        .map(this::convertToResponseDTO)
-        .collect(Collectors.toList());
+                .stream()
+                .map(this::convertToResponseDTO)
+                .collect(Collectors.toList());
     }
 
     private OrderDTO.Response convertToResponseDTO(Order order) {
         OrderDTO.Response res = new OrderDTO.Response();
         res.setOrderId(order.getOrderId());
         if (order.getUser() != null) {
-        res.setUserId(order.getUser().getId()); 
-        res.setEmail(order.getUser().getEmail()); 
-    }
+            res.setUserId(order.getUser().getId()); 
+            res.setEmail(order.getUser().getEmail()); 
+        }
         res.setTotalPrice(order.getTotalPrice());
         res.setStatus(order.getStatus());
         res.setCreatedAt(order.getCreatedAt());
@@ -98,11 +101,13 @@ public class OrderService {
 
         List<OrderDTO.OrderItemResponse> itemDTOs = order.getOrderItems().stream().map(item -> {
             OrderDTO.OrderItemResponse itemRes = new OrderDTO.OrderItemResponse();
-            itemRes.setProductName(item.getProduct().getProductName());
-            itemRes.setImageUrl(item.getProduct().getImageUrl());
+            Product product = item.getProductVariant().getProduct();
+            
+            itemRes.setProductName(product.getProductName());
+            itemRes.setImageUrl(product.getImageUrl());
             itemRes.setQuantity(item.getQuantity());
             itemRes.setPrice(item.getPrice());
-            itemRes.setSize(item.getSize());
+            itemRes.setSize(item.getProductVariant().getSize());
             itemRes.setSubTotal(item.getSubTotal());
             return itemRes;
         }).collect(Collectors.toList());
@@ -110,28 +115,26 @@ public class OrderService {
         res.setOrderItems(itemDTOs);
         return res;
     }
-    public OrderDTO.Response updateOrderStatus(Integer orderId, String newStatus){
 
+    @Transactional
+    public OrderDTO.Response updateOrderStatus(Integer orderId, String newStatus){
         Order order = orderRepository.findById(orderId)
-        .orElseThrow(()-> new RuntimeException("Không tồn tại đơn hàng này!"));
+                .orElseThrow(()-> new RuntimeException("Không tồn tại đơn hàng này!"));
 
         String oldStatus = order.getStatus();
-        if (oldStatus.equalsIgnoreCase(newStatus))
-        {
+        if (oldStatus.equalsIgnoreCase(newStatus)) {
             return convertToResponseDTO(order);
         }
-        if ("cancelled".equalsIgnoreCase(newStatus))
-        {
-            for (OrderItem item:order.getOrderItems())
-                {
-                    Product product = item.getProduct();
-                    product.setStock(product.getStock()+item.getQuantity());
-                    productRepository.save(product);
-                } 
+        if ("cancelled".equalsIgnoreCase(newStatus)) {
+            for (OrderItem item : order.getOrderItems()) {
+                ProductVariant variant = item.getProductVariant();
+                variant.setStock(variant.getStock() + item.getQuantity());
+                variantRepository.save(variant);
+            } 
         }
+
         order.setStatus(newStatus.toLowerCase());
         Order updatedOrder = orderRepository.save(order);
         return convertToResponseDTO(updatedOrder);
     }
 }
-

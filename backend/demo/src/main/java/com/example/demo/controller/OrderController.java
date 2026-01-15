@@ -5,13 +5,16 @@ import com.example.demo.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyEmitter;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/orders")
 @CrossOrigin(origins = "*")
 public class OrderController {
+    
     @Autowired
     private OrderService orderService;
 
@@ -21,7 +24,9 @@ public class OrderController {
             OrderDTO.Response response = orderService.createOrder(request);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("{\"message\": \"" + e.getMessage() + "\"}");
+            Map<String, String> error = new HashMap<>();
+            error.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
         }
     }
 
@@ -30,13 +35,14 @@ public class OrderController {
         List<OrderDTO.Response> orders = orderService.getOrdersByUserId(userId);
         return ResponseEntity.ok(orders);
     }
+
     @GetMapping
     public ResponseEntity<List<OrderDTO.Response>> getAllOrders(){
         List<OrderDTO.Response> orders = orderService.getAllOrders();
         return ResponseEntity.ok(orders);
     }
 
-     @GetMapping("/{orderId}")
+    @GetMapping("/{orderId}")
     public ResponseEntity<OrderDTO.Response> getOrderDetail(@PathVariable Integer orderId) {
         try {
             OrderDTO.Response order = orderService.getOrderById(orderId);
@@ -49,10 +55,12 @@ public class OrderController {
     @PutMapping("/{orderId}/status")
     public ResponseEntity<?> updateStatus(@PathVariable Integer orderId, @RequestParam String status) {
         try {
-        OrderDTO.Response response = orderService.updateOrderStatus(orderId, status);
-        return ResponseEntity.ok(response);
-    } catch (Exception e) {
-        return ResponseEntity.badRequest().body("{\"message\": \"" + e.getMessage() + "\"}");
+            OrderDTO.Response response = orderService.updateOrderStatus(orderId, status);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
     }
-}
 }

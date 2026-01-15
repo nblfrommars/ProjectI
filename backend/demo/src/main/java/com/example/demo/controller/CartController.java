@@ -13,28 +13,28 @@ import java.util.Map;
 @RequestMapping("api/cart")
 @CrossOrigin(origins = "*")
 public class CartController {
+    
     @Autowired
     private CartService cartService;
+
     @GetMapping("/{userId}")
-    public ResponseEntity <List<Cart>> getCart (@PathVariable Integer userId){
+    public ResponseEntity<List<Cart>> getCart(@PathVariable Integer userId) {
         return ResponseEntity.ok(cartService.getCartByUser(userId));
     }
-    @PostMapping("/add")
-    public ResponseEntity<Cart> add(@RequestBody Map<String, Object> payload)
-    {
-        Integer userId = (Integer) payload.get("userId");
-        Integer productId = (Integer) payload.get("productId");
-        Integer qty = (Integer) payload.get("quantity");
-        String size = (String) payload.get("size");
 
-        return ResponseEntity.ok(cartService.addToCart(userId, productId, qty, size));
+    @PostMapping("/add")
+    public ResponseEntity<Cart> add(@RequestBody Map<String, Object> payload) {
+        Integer userId = (Integer) payload.get("userId");
+        Integer variantId = (Integer) payload.get("variantId");
+        Integer qty = (Integer) payload.get("quantity");
+
+        return ResponseEntity.ok(cartService.addToCart(userId, variantId, qty));
     }
 
     @PutMapping("/update/{cartId}")
     public ResponseEntity<Cart> update(@PathVariable Integer cartId, @RequestBody Map<String, Integer> payload) {
         return ResponseEntity.ok(cartService.updateQuantity(cartId, payload.get("quantity")));
     }
-
 
     @DeleteMapping("/remove/{cartId}")
     public ResponseEntity<?> remove(@PathVariable Integer cartId) {
@@ -47,5 +47,4 @@ public class CartController {
         cartService.clearCart(userId);
         return ResponseEntity.ok().build();
     }
-
 }

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import "../../styles/Finance.css";
 import axios from "axios";
 import * as XLSX from "xlsx";
@@ -19,7 +19,7 @@ const Finance = () => {
   const [productData, setProductData] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const fetchFinanceData = async () => {
+  const fetchFinanceData = useCallback(async () => {
     if (!startDate || !endDate) {
       alert("Vui lòng chọn đầy đủ khoảng thời gian");
       return;
@@ -29,11 +29,10 @@ const Finance = () => {
     try {
       const token = localStorage.getItem("token");
       const config = {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
         params: { startDate, endDate },
       };
+
       const [summaryRes, productRes] = await Promise.all([
         axios.get(`http://localhost:8080/api/statistics/range-summary`, config),
         axios.get(
@@ -43,16 +42,13 @@ const Finance = () => {
       ]);
 
       setSummary({
-        orderCount: summaryRes.data.orderCount,
+        orderCount: summaryRes.data.orderCount || 0,
         totalRevenue: summaryRes.data.totalRevenue || 0,
       });
-      setProductData(productRes.data);
+      setProductData(productRes.data || []);
     } catch (error) {
       console.error("Lỗi khi tải báo cáo tài chính:", error);
-      if (
-        error.response &&
-        (error.response.status === 401 || error.response.status === 403)
-      ) {
+      if (error.response?.status === 401 || error.response?.status === 403) {
         alert("Phiên đăng nhập hết hạn hoặc bạn không có quyền Admin!");
       } else {
         alert("Không thể tải dữ liệu báo cáo.");
@@ -60,33 +56,42 @@ const Finance = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [startDate, endDate]);
+
   useEffect(() => {
     fetchFinanceData();
   }, []);
+
   const handleExportExcel = () => {
     if (productData.length === 0) {
       alert("Không có dữ liệu để xuất báo cáo!");
       return;
     }
+
     const headerInfo = [
       ["BÁO CÁO TÀI CHÍNH"],
       [`Thời gian: từ ${startDate} đến ${endDate}`],
       [`Số đơn hàng: ${summary.orderCount}`],
-      [`Tổng doanh thu: ${summary.totalRevenue.toLocaleString()} VNĐ`],
+      [`Tổng doanh thu: ${Number(summary.totalRevenue).toLocaleString()} VNĐ`],
       [""],
-      ["STT", "TÊN SẢN PHẨM", "DOANH SỐ", "DOANH THU"],
+      ["STT", "TÊN SẢN PHẨM", "DOANH SỐ", "DOANH THU (VNĐ)"],
     ];
+
     const tableData = productData.map((item, index) => [
       index + 1,
       item.productName,
       item.totalQuantity,
       item.totalRevenue,
     ]);
+
     const finalData = [...headerInfo, ...tableData];
     const worksheet = XLSX.utils.aoa_to_sheet(finalData);
+
+    worksheet["!cols"] = [{ wch: 5 }, { wch: 30 }, { wch: 15 }, { wch: 20 }];
+
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "BaoCaoTaiChinh");
+
     const excelBuffer = XLSX.write(workbook, {
       bookType: "xlsx",
       type: "array",
@@ -94,7 +99,7 @@ const Finance = () => {
     const blob = new Blob([excelBuffer], {
       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8",
     });
-    saveAs(blob, `Bao-cao-tai-chinh-${startDate}-den-${endDate}.xlsx`);
+    saveAs(blob, `Bao-cao-tai-chinh-${startDate}-to-${endDate}.xlsx`);
   };
 
   return (
@@ -138,13 +143,13 @@ const Finance = () => {
         <div className="summary-box box-pink">
           <span className="label">TỔNG DOANH THU</span>
           <span className="value">
-            {summary.totalRevenue.toLocaleString()}₫
+            {(summary.totalRevenue || 0).toLocaleString()}₫
           </span>
         </div>
       </div>
 
       <div className="table-wrapper">
-        <h3>BÁO CÁO CHI TIẾT</h3>
+        <h3>BÁO CÁO CHI TIẾT THEO SẢN PHẨM</h3>
         <table className="finance-table">
           <thead>
             <tr>
@@ -171,13 +176,30 @@ const Finance = () => {
                   <td style={{ fontWeight: "bold" }}>{item.productName}</td>
                   <td style={{ textAlign: "center" }}>{item.totalQuantity}</td>
                   <td style={{ textAlign: "right" }}>
-                    {item.totalRevenue.toLocaleString()}₫
+                    {(item.totalRevenue || 0).toLocaleString()}₫
                   </td>
                 </tr>
               ))
             )}
           </tbody>
-          {productData.length > 0}
+          {productData.length > 0 && (
+            <tfoot>
+              <tr style={{ fontWeight: "bold", background: "#f9f9f9" }}>
+                <td colSpan="2" style={{ textAlign: "center" }}>
+                  TỔNG CỘNG
+                </td>
+                <td style={{ textAlign: "center" }}>
+                  {productData.reduce(
+                    (sum, item) => sum + item.totalQuantity,
+                    0
+                  )}
+                </td>
+                <td style={{ textAlign: "right" }}>
+                  {summary.totalRevenue.toLocaleString()}₫
+                </td>
+              </tr>
+            </tfoot>
+          )}
         </table>
       </div>
     </div>

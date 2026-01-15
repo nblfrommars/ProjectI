@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.math.BigDecimal;
+import com.example.demo.model.ProductVariant;
 @Entity
 @Table(name = "products")
 public class Product {
@@ -16,7 +17,7 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer productId; 
 
-    @Column( nullable = false)
+    @Column(nullable = false)
     private String productName; 
 
     @ManyToOne
@@ -32,18 +33,14 @@ public class Product {
 
     private String imageUrl; 
 
-    private Integer stock;
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnoreProperties("product")
+    private List<ProductVariant> variants = new ArrayList<>();
 
+    @Column(updatable = false)
     private LocalDateTime createdAt; 
 
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
-    @JsonIgnoreProperties("product")
-    private List<Cart> carts = new ArrayList<>();
-
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
-    @JsonIgnoreProperties("product")
-    private List<OrderItem> orderItems = new ArrayList<>();
-
+    
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
@@ -70,15 +67,10 @@ public class Product {
     public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 
-    public Integer getStock() { return stock; }
-    public void setStock(Integer stock) { this.stock = stock; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
-    public List<Cart> getCarts() { return carts; }
-    public void setCarts(List<Cart> carts) { this.carts = carts; }
-
-    public List<OrderItem> getOrderItems() { return orderItems; }
-    public void setOrderItems(List<OrderItem> orderItems) { this.orderItems = orderItems; }
+    public List<ProductVariant> getVariants() { return variants; }
+    public void setVariants(List<ProductVariant> variants) { this.variants = variants; }
 }

@@ -15,8 +15,8 @@
   background: #fff;
   padding: 25px 30px;
   border-radius: 10px;
-  width: 450px;
-  max-width: 90%;
+  width: 480px;
+  max-width: 95%;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
   font-family: Arial, sans-serif;
 }
@@ -29,6 +29,15 @@
   color: #333;
 }
 
+.form-row {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 10px;
+}
+.form-row .form-group {
+  flex: 1;
+}
+
 .form-group {
   display: flex;
   flex-direction: column;
@@ -36,50 +45,97 @@
 }
 
 .form-group label {
-  font-weight: 500;
+  font-weight: bold;
   margin-bottom: 5px;
   color: #555;
+  font-size: 14px;
 }
 
 .form-group input,
+.form-group select,
 .form-group textarea {
   padding: 8px 12px;
   font-size: 14px;
   border: 1px solid #ccc;
   border-radius: 6px;
   outline: none;
-  transition: 0.2s;
 }
 
-.form-group input:focus,
-.form-group textarea:focus {
+.variants-section {
+  margin-top: 10px;
+  background-color: #fdfdfd;
+  border: 1px solid #eee;
+  padding: 15px;
+  border-radius: 8px;
+}
+
+.variants-section label {
+  font-weight: bold;
+  display: block;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.variant-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.variant-table th {
+  text-align: left;
+  font-size: 12px;
+  color: #777;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #ddd;
+}
+
+.variant-table td {
+  padding: 10px 0;
+  border-bottom: 1px solid #f1f1f1;
+}
+
+.variant-table tr:last-child td {
+  border-bottom: none;
+}
+
+.size-label {
+  font-weight: bold;
+  color: #080b0e;
+  font-size: 15px;
+  width: 80px;
+}
+
+.variant-table input[type="number"] {
+  width: 100px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  text-align: center;
+  background-color: #fff;
+}
+
+.variant-table input[type="number"]:focus {
   border-color: #1a73e8;
-}
-
-.form-group textarea {
-  resize: vertical;
-  min-height: 60px;
+  background-color: #f0f7ff;
 }
 
 .modal-actions {
   display: flex;
   justify-content: space-between;
-  margin-top: 20px;
-  align-items: center;
+  margin-top: 25px;
 }
 
 .delete-btn {
-  background: #d93025;
-  color: #fff;
+  background: #fff;
+  color: #d93025;
   padding: 8px 16px;
-  border: none;
+  border: 1px solid #d93025;
   border-radius: 6px;
   cursor: pointer;
-  transition: 0.2s;
+  font-weight: bold;
 }
 
 .delete-btn:hover {
-  background: #b52b1f;
+  background: #fff5f5;
 }
 
 .right-actions {
@@ -90,15 +146,15 @@
 .save-btn {
   background: #1a73e8;
   color: #fff;
-  padding: 8px 16px;
+  padding: 8px 20px;
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  transition: 0.2s;
+  font-weight: bold;
 }
 
 .save-btn:hover {
-  background: #0f5dc1;
+  background: #155cb0;
 }
 
 .cancel-btn {
@@ -108,16 +164,8 @@
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  transition: 0.2s;
 }
 
 .cancel-btn:hover {
   background: #e0e0e0;
-}
-
-@media (max-width: 500px) {
-  .modal-content {
-    width: 90%;
-    padding: 20px;
-  }
 }

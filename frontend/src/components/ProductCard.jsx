@@ -2,6 +2,9 @@ import { Link } from "react-router-dom";
 import "../styles/ProductCard.css";
 
 const ProductCard = ({ product, baseUrl }) => {
+  const totalStock =
+    product.variants?.reduce((sum, variant) => sum + variant.stock, 0) || 0;
+  const isOutOfStock = totalStock === 0;
   const getImageUrl = (url) => {
     if (!url) return "https://via.placeholder.com/150";
     if (url.startsWith("http")) return url;
@@ -10,12 +13,19 @@ const ProductCard = ({ product, baseUrl }) => {
   return (
     <Link
       to={`/product/${product.productId}`}
-      style={{ textDecoration: "none", color: "inherit" }}
+      style={{
+        textDecoration: "none",
+        color: "inherit",
+        pointerEvents: isOutOfStock ? "none" : "auto",
+      }}
     >
-      <div className="product-card">
+      <div className={`product-card ${isOutOfStock ? "out-of-stock" : ""}`}>
+        {isOutOfStock && <div className="out-of-stock-label">HẾT HÀNG</div>}
+
         <img
           src={getImageUrl(product.imageUrl)}
           alt={product.productName}
+          style={{ opacity: isOutOfStock ? 0.5 : 1 }}
           onError={(e) => {
             e.target.src = "https://via.placeholder.com/150";
           }}

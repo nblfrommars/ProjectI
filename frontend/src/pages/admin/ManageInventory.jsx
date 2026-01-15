@@ -142,7 +142,9 @@ export default function ManageInventory() {
 
               <td>{item.category?.categoryName || "N/A"}</td>
 
-              <td>{item.stock}</td>
+              <td style={{ fontWeight: "bold", textAlign: "center" }}>
+                {item.variants?.reduce((sum, v) => sum + v.stock, 0) || 0}
+              </td>
 
               <td>
                 <button

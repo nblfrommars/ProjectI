@@ -181,20 +181,8 @@ const ManageOrder = () => {
             <option value="All">Tất cả</option>
             <option value="pending">Chờ xử lý</option>
             <option value="confirmed">Đã xác nhận</option>
-            <option value="shipping">Đang giao</option>
             <option value="delivered">Đã hoàn thành</option>
             <option value="cancelled">Đã hủy</option>
-          </select>
-        </label>
-
-        <label>
-          Sắp xếp:
-          <select
-            value={sortOrder}
-            onChange={(e) => setSortOrder(e.target.value)}
-          >
-            <option value="desc">Mới nhất</option>
-            <option value="asc">Cũ nhất</option>
           </select>
         </label>
       </div>
@@ -215,9 +203,7 @@ const ManageOrder = () => {
                     <span>ID: #{order.orderId}</span>
                     <span>
                       Ngày:{" "}
-                      {order.createdAt
-                        ? new Date(order.createdAt).toLocaleDateString("vi-VN")
-                        : "N/A"}
+                      {new Date(order.createdAt).toLocaleDateString("vi-VN")}
                     </span>
                     <span
                       className={styles["order-status"]}
@@ -228,14 +214,20 @@ const ManageOrder = () => {
                     >
                       {order.status?.toUpperCase()}
                     </span>
-                    <span>Khách: KH-{order.userId}</span>
+                    <span>Khách: {order.email || `KH-${order.userId}`}</span>
                   </div>
 
                   <div className={styles["order-products"]}>
                     {order.orderItems?.map((item, idx) => (
                       <div key={idx} className={styles["order-product"]}>
                         <span>
-                          {item.productName} <strong>x{item.quantity}</strong>
+                          {item.productName}
+                          <strong
+                            style={{ color: "#120a0d", marginLeft: "5px" }}
+                          >
+                            (Size: {item.size})
+                          </strong>
+                          <strong> x{item.quantity}</strong>
                         </span>
                         <span>{(item.price || 0).toLocaleString()}đ</span>
                       </div>
@@ -243,13 +235,13 @@ const ManageOrder = () => {
                   </div>
 
                   <div className={styles["order-total"]}>
-                    Tổng: {(order.totalPrice || 0).toLocaleString()}₫
+                    Tổng tiền: {(order.totalPrice || 0).toLocaleString()}₫
                   </div>
                 </div>
 
                 <div className={styles["order-actions"]}>
                   <span className={styles["action-titles"]}>
-                    Thao tác nhanh
+                    Cập nhật trạng thái
                   </span>
 
                   <select
@@ -259,13 +251,6 @@ const ManageOrder = () => {
                       handleStatusChange(order.orderId, e.target.value)
                     }
                     disabled={isFinalStatus}
-                    style={{
-                      borderLeft: `4px solid ${
-                        statusColors[order.status?.toLowerCase()]
-                      }`,
-                      cursor: isFinalStatus ? "not-allowed" : "pointer",
-                      opacity: isFinalStatus ? 0.6 : 1,
-                    }}
                   >
                     {STATUS_OPTIONS.map((opt) => (
                       <option key={opt.value} value={opt.value}>
@@ -274,10 +259,14 @@ const ManageOrder = () => {
                     ))}
                   </select>
 
-                  <button onClick={() => handlePrintLabel(order)}>
-                    Print Label
+                  <button
+                    className={styles["btn-print"]}
+                    onClick={() => handlePrintLabel(order)}
+                  >
+                    Shipping Label (PDF)
                   </button>
                   <button
+                    className={styles["btn-detail"]}
                     onClick={() => navigate(`/admin/orders/${order.orderId}`)}
                   >
                     Chi tiết

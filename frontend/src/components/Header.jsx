@@ -11,7 +11,6 @@ const Header = ({ user, onLogout }) => {
 
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Lấy tên hiển thị: Ưu tiên userName, nếu không có thì dùng email
   const displayName = user?.email ? user.email.split("@")[0] : "";
 
   const linkStyle = (path) => ({

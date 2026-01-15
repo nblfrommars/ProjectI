@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "../../styles/ProductDetail.css";
+
 const API_BASE_URL = "http://localhost:8080";
+
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -10,7 +12,8 @@ const ProductDetail = () => {
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [size, setSize] = useState("M");
+
+  const [selectedVariant, setSelectedVariant] = useState(null);
 
   const getFullImageUrl = (url) => {
     if (!url) return "https://via.placeholder.com/400";
@@ -22,33 +25,41 @@ const ProductDetail = () => {
     const fetchProduct = async () => {
       try {
         const res = await fetch(`${API_BASE_URL}/api/products/${id}`);
-        if (!res.ok) {
-          throw new Error("Không tìm thấy sản phẩm");
-        }
+        if (!res.ok) throw new Error("Không tìm thấy sản phẩm");
+
         const data = await res.json();
         setProduct(data);
+
+        if (data.variants && data.variants.length > 0) {
+          const available =
+            data.variants.find((v) => v.stock > 0) || data.variants[0];
+          setSelectedVariant(available);
+        }
       } catch (err) {
         console.error("Lỗi fetch sản phẩm:", err);
       } finally {
         setLoading(false);
       }
     };
-
     fetchProduct();
   }, [id]);
 
   const handleAddToCart = async () => {
-    if (isOutOfStock) return;
+    if (!selectedVariant || selectedVariant.stock <= 0) {
+      alert("Size này đã hết hàng!");
+      return;
+    }
+
     if (!user || !token) {
       alert("Vui lòng đăng nhập để thêm vào giỏ hàng!");
       navigate("/login");
       return;
     }
+
     const cartItem = {
-      userId: user.id,
-      productId: product.productId,
+      userId: user.id || user.userId,
+      variantId: selectedVariant.variantId,
       quantity: 1,
-      size: size,
     };
 
     try {
@@ -62,21 +73,18 @@ const ProductDetail = () => {
       });
 
       if (response.ok) {
-        alert(`Đã thêm ${product.productName} (size ${size}) vào giỏ hàng!`);
-      } else if (response.status === 401 || response.status === 403) {
-        alert("Phiên đăng nhập hết hạn, vui lòng đăng nhập lại.");
-        navigate("/login");
+        alert(`Đã thêm vào giỏ hàng size ${selectedVariant.size}!`);
       } else {
         const errorData = await response.json();
         alert("Lỗi: " + (errorData.message || "Không thể thêm vào giỏ hàng"));
       }
     } catch (err) {
-      console.error("Lỗi khi thêm vào giỏ hàng:", err);
-      alert("Không thể kết nối đến server");
+      alert("Lỗi kết nối server");
     }
   };
+
   const handleBuyNow = () => {
-    if (isOutOfStock) return;
+    if (!selectedVariant || selectedVariant.stock <= 0) return;
 
     if (!user) {
       alert("Vui lòng đăng nhập để đặt hàng!");
@@ -85,28 +93,26 @@ const ProductDetail = () => {
     }
 
     const itemToCheckout = {
-      productId: product.productId,
-      productName: product.productName,
-      price: product.price,
-      imageUrl: product.imageUrl,
+      productVariant: {
+        ...selectedVariant,
+        product: {
+          productId: product.productId,
+          productName: product.productName,
+          price: product.price,
+          imageUrl: product.imageUrl,
+        },
+      },
       quantity: 1,
-      size: size,
     };
 
-    navigate("/checkout", { state: { buyNowItem: [itemToCheckout] } });
+    navigate("/checkout", { state: { buyNowItem: itemToCheckout } });
   };
 
-  if (loading)
-    return (
-      <div style={{ textAlign: "center", padding: "50px" }}>Đang tải...</div>
-    );
-  if (!product)
-    return (
-      <div style={{ textAlign: "center", padding: "50px" }}>
-        Sản phẩm không tồn tại!
-      </div>
-    );
-  const isOutOfStock = product.stock === 0 || product.stock === null;
+  if (loading) return <div className="loading">Đang tải...</div>;
+  if (!product) return <div className="error">Sản phẩm không tồn tại!</div>;
+
+  const isEntirelyOutOfStock = product.variants?.every((v) => v.stock === 0);
+
   return (
     <div className="product-detail-container">
       <div className="product-detail-horizontal">
@@ -122,51 +128,54 @@ const ProductDetail = () => {
 
         <div className="product-detail-info">
           <h2>{product.productName}</h2>
-
-          <p className="description">
-            {product.des || "Không có mô tả cho sản phẩm này."}
-          </p>
+          <p className="description">{product.des || "Không có mô tả."}</p>
 
           <div className="status">
             Trạng thái:{" "}
-            <span className={isOutOfStock ? "out-of-stock" : "in-stock"}>
-              {isOutOfStock ? "Hết hàng" : `Còn hàng`}
+            <span
+              className={
+                selectedVariant?.stock > 0 ? "in-stock" : "out-of-stock"
+              }
+            >
+              {selectedVariant?.stock > 0
+                ? `Còn hàng (Kho: ${selectedVariant.stock})`
+                : "Hết hàng"}
             </span>
           </div>
 
-          <p className="price">
-            {product.price ? product.price.toLocaleString() : "0"}₫
-          </p>
+          <p className="price">{product.price?.toLocaleString()}₫</p>
 
           <div className="size-selector">
-            <span style={{ marginRight: "10px" }}>Size:</span>
-            {["S", "M", "L", "XL", "XXL"].map((s) => (
-              <button
-                key={s}
-                onClick={() => setSize(s)}
-                className={`size-btn ${size === s ? "selected" : ""}`}
-              >
-                {s}
-              </button>
-            ))}
+            <span>Size:</span>
+            <div className="size-buttons">
+              {product.variants?.map((v) => (
+                <button
+                  key={v.variantId}
+                  disabled={v.stock === 0}
+                  onClick={() => setSelectedVariant(v)}
+                  className={`size-btn ${
+                    selectedVariant?.variantId === v.variantId ? "selected" : ""
+                  } ${v.stock === 0 ? "disabled" : ""}`}
+                >
+                  {v.size}
+                </button>
+              ))}
+            </div>
           </div>
 
-          <div
-            className="product-actions"
-            style={{ display: "flex", gap: "10px", marginTop: "20px" }}
-          >
+          <div className="product-actions">
             <button
               className="add-to-cart"
               onClick={handleAddToCart}
-              disabled={isOutOfStock}
+              disabled={isEntirelyOutOfStock || selectedVariant?.stock <= 0}
             >
               Thêm vào giỏ hàng
             </button>
 
             <button
               className="buy-now-btn"
-              disabled={isOutOfStock}
               onClick={handleBuyNow}
+              disabled={isEntirelyOutOfStock || selectedVariant?.stock <= 0}
             >
               Đặt hàng ngay
             </button>

@@ -7,7 +7,7 @@ import jakarta.persistence.*;
 @Table(
     name = "cart_items",
     uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"id", "product_id", "size"})
+        @UniqueConstraint(columnNames = {"id", "variant_id"}) 
     }
 )
 public class Cart {
@@ -22,23 +22,19 @@ public class Cart {
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "product_id", nullable = false)
-    @JsonIgnoreProperties({"carts", "orderItems", "category"}) 
-    private Product product;
+    @JoinColumn(name = "variant_id", nullable = false)
+    @JsonIgnoreProperties({"carts", "orderItems"}) 
+    private ProductVariant productVariant;
 
     @Column(nullable = false)
     private Integer quantity = 1;
 
-    @Column(length = 10)
-    private String size;
-
     public Cart() {}
 
-    public Cart(User user, Product product, Integer quantity, String size) {
+    public Cart(User user, ProductVariant productVariant, Integer quantity) {
         this.user = user;
-        this.product = product;
+        this.productVariant = productVariant;
         this.quantity = quantity;
-        this.size = size;
     }
 
     public Integer getCartId() { 
@@ -55,11 +51,11 @@ public class Cart {
         this.user = user; 
     }
 
-    public Product getProduct() { 
-        return product; 
+    public ProductVariant getProductVariant() { 
+        return productVariant; 
     }
-    public void setProduct(Product product) { 
-        this.product = product; 
+    public void setProductVariant(ProductVariant productVariant) { 
+        this.productVariant = productVariant; 
     }
 
     public Integer getQuantity() { 
@@ -68,11 +64,11 @@ public class Cart {
     public void setQuantity(Integer quantity) { 
         this.quantity = quantity; 
     }
-
     public String getSize() {
-        return size;
+        return (productVariant != null) ? productVariant.getSize() : null;
     }
-    public void setSize(String size) {
-        this.size = size;
+    
+    public Product getProduct() {
+        return (productVariant != null) ? productVariant.getProduct() : null;
     }
 }

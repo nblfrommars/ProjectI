@@ -4,6 +4,7 @@ import com.example.demo.dto.DailyStatsResponse;
 import com.example.demo.dto.ProductSalesDTO;
 import com.example.demo.model.Order;
 import com.example.demo.model.OrderItem;
+import com.example.demo.model.Product;
 import com.example.demo.repository.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,16 +16,17 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
+
 @Service
 public class StatisticsService {
-   @Autowired 
+    @Autowired 
     private OrderRepository orderRepository;
     
-    public DailyStatsResponse getDailyStats(){
+    public DailyStatsResponse getDailyStats() {
         LocalDateTime startOfDay = LocalDateTime.now().with(LocalTime.MIN);
         LocalDateTime endOfDay = LocalDateTime.now().with(LocalTime.MAX);
 
-        List <Order> dailyOrders = orderRepository.findByCreatedAtBetween(
+        List<Order> dailyOrders = orderRepository.findByCreatedAtBetween(
                 Timestamp.valueOf(startOfDay), 
                 Timestamp.valueOf(endOfDay)
         );
@@ -41,7 +43,7 @@ public class StatisticsService {
             if ("cancelled".equalsIgnoreCase(order.getStatus())) continue;
             
             for (OrderItem item : order.getOrderItems()) {
-                String name = item.getProduct().getProductName();
+                String name = item.getProductVariant().getProduct().getProductName();
                 productQtyMap.put(name, productQtyMap.getOrDefault(name, 0) + item.getQuantity());
             }
         }
@@ -75,7 +77,7 @@ public class StatisticsService {
         for (Order order : orders) {
             if ("cancelled".equalsIgnoreCase(order.getStatus())) continue;
             for (OrderItem item : order.getOrderItems()) {
-                String name = item.getProduct().getProductName();
+                String name = item.getProductVariant().getProduct().getProductName();
                 productQtyMap.put(name, productQtyMap.getOrDefault(name, 0) + item.getQuantity());
             }
         }
@@ -89,7 +91,7 @@ public class StatisticsService {
         return new DailyStatsResponse(orderCount, totalRevenue, bestSellers);
     }
 
-    public List <ProductSalesDTO> getProductSalesStats(LocalDate startDate, LocalDate endDate){
+    public List<ProductSalesDTO> getProductSalesStats(LocalDate startDate, LocalDate endDate) {
         Timestamp start = Timestamp.valueOf(startDate.atStartOfDay());
         Timestamp end = Timestamp.valueOf(endDate.atTime(LocalTime.MAX));
         List<Order> orders = orderRepository.findByCreatedAtBetween(start, end);
@@ -100,7 +102,8 @@ public class StatisticsService {
             if ("cancelled".equalsIgnoreCase(order.getStatus())) continue;
 
             for (OrderItem item : order.getOrderItems()) {
-                String name = item.getProduct().getProductName();
+                Product product = item.getProductVariant().getProduct();
+                String name = product.getProductName();
                 int qty = item.getQuantity();
                 BigDecimal revenue = item.getPrice().multiply(new BigDecimal(qty));
 
@@ -116,10 +119,8 @@ public class StatisticsService {
                 }
             }
         }
-         return reportMap.values().stream()
+        return reportMap.values().stream()
                 .sorted(Comparator.comparing(ProductSalesDTO::getTotalRevenue).reversed())
                 .collect(Collectors.toList());
-
-
     }
 }

@@ -12,8 +12,11 @@ const Checkout = ({ cart, clearCart }) => {
   const buyNowItem = location.state?.buyNowItem;
   const cartFromStorage = JSON.parse(localStorage.getItem("cart") || "[]");
 
-  const safeCart =
-    buyNowItem || (cart && cart.length > 0 ? cart : cartFromStorage);
+  const safeCart = buyNowItem
+    ? [buyNowItem]
+    : cart && cart.length > 0
+    ? cart
+    : cartFromStorage;
 
   const user = JSON.parse(localStorage.getItem("user") || "null");
   const token = localStorage.getItem("token");
@@ -22,15 +25,24 @@ const Checkout = ({ cart, clearCart }) => {
   const [phone, setPhone] = useState(user?.phone || "");
   const [paymentMethod, setPaymentMethod] = useState("COD");
 
-  const getProductId = (item) => item?.product?.productId || item?.productId;
+  const getPrice = (item) =>
+    Number(item.productVariant?.product?.price || item.price || 0);
 
-  const getQuantity = (item) => Number(item?.quantity || item?.qty || 0);
-  const getPrice = (item) => Number(item?.price || item?.product?.price || 0);
+  const getQuantity = (item) => Number(item.quantity || 0);
 
+  const getVariantId = (item) =>
+    item.productVariant?.variantId || item.variantId;
+
+  const getProductName = (item) =>
+    item.productVariant?.product?.productName || item.productName;
+
+  const getImageUrl = (url) => {
+    if (!url) return "https://via.placeholder.com/80?text=No+Image";
+    if (url.startsWith("http")) return url;
+    return `${API_BASE_URL}${url}`;
+  };
   const totalPrice = safeCart.reduce((sum, item) => {
-    const q = getQuantity(item);
-    const p = getPrice(item);
-    return sum + p * q;
+    return sum + getPrice(item) * getQuantity(item);
   }, 0);
 
   const handleConfirm = async () => {
@@ -51,9 +63,8 @@ const Checkout = ({ cart, clearCart }) => {
       address: address,
       paymentMethod: paymentMethod,
       items: safeCart.map((item) => ({
-        productId: item?.product?.productId || item?.productId,
+        variantId: getVariantId(item),
         quantity: getQuantity(item),
-        size: item.size || "M",
       })),
     };
 
@@ -62,9 +73,7 @@ const Checkout = ({ cart, clearCart }) => {
         `${API_BASE_URL}/api/orders/create`,
         orderRequest,
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
 
@@ -73,16 +82,12 @@ const Checkout = ({ cart, clearCart }) => {
           try {
             await axios.delete(
               `${API_BASE_URL}/api/cart/clear/${user.id || user.userId}`,
-              {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-              }
+              { headers: { Authorization: `Bearer ${token}` } }
             );
             clearCart?.();
             localStorage.removeItem("cart");
           } catch (clearError) {
-            console.error("Lỗi khi xóa giỏ hàng DB:", clearError);
+            console.error("Lỗi khi xóa giỏ hàng:", clearError);
           }
         }
         alert("Đặt hàng thành công!");
@@ -90,28 +95,10 @@ const Checkout = ({ cart, clearCart }) => {
       }
     } catch (error) {
       console.error("Lỗi khi đặt hàng:", error);
-      if (error.response?.status === 401 || error.response?.status === 403) {
-        alert("Phiên đăng nhập hết hạn, vui lòng đăng nhập lại.");
-        navigate("/login");
-      } else {
-        alert("Đặt hàng thất bại: " + (error.response?.data || "Lỗi máy chủ"));
-      }
+      const errorMessage = error.response?.data?.message || "Đặt hàng thất bại";
+      alert(errorMessage);
     }
   };
-  const getImageUrl = (url) => {
-    if (!url) return "https://via.placeholder.com/80?text=No+Image";
-    if (url.startsWith("http")) return url;
-    return `${API_BASE_URL}${url}`;
-  };
-
-  if (!safeCart || safeCart.length === 0) {
-    return (
-      <div className="checkout-empty">
-        <p>Giỏ hàng của bạn đang trống.</p>
-        <button onClick={() => navigate("/")}>Tiếp tục mua sắm</button>
-      </div>
-    );
-  }
 
   return (
     <div className="checkout-page">
@@ -119,40 +106,34 @@ const Checkout = ({ cart, clearCart }) => {
         <div className="checkout-left">
           <h3>{buyNowItem ? "Sản phẩm mua ngay" : "Danh sách sản phẩm"}</h3>
           <div className="checkout-items-list">
-            {safeCart.map((item, index) => {
-              const pid = getProductId(item);
-              const qty = Number(getQuantity(item)) || 0;
-              const price = Number(getPrice(item)) || 0;
-
-              return (
-                <div className="checkout-item" key={`${pid}-${index}`}>
-                  <img
-                    src={getImageUrl(item.imageUrl || item.product?.imageUrl)}
-                    alt={item.productName || item.product?.productName}
-                    onError={(e) => {
-                      e.target.src = "https://via.placeholder.com/80";
-                    }}
-                  />
-                  <div className="item-info">
-                    <p className="item-name">
-                      {item.productName || item.product?.productName}
-                    </p>
-                    <p className="item-spec">
-                      Size: {item.size} | SL: {getQuantity(item)}
-                    </p>
-                    <p className="item-price">
-                      {(getPrice(item) * getQuantity(item)).toLocaleString()}₫
-                    </p>
-                  </div>
+            {safeCart.map((item, index) => (
+              <div className="checkout-item" key={index}>
+                <img
+                  src={getImageUrl(
+                    item.productVariant?.product?.imageUrl || item.imageUrl
+                  )}
+                  alt={getProductName(item)}
+                  onError={(e) => {
+                    e.target.src = "https://via.placeholder.com/80";
+                  }}
+                />
+                <div className="item-info">
+                  <p className="item-name">{getProductName(item)}</p>
+                  <p className="item-spec">
+                    Size: {item.productVariant?.size || item.size} | SL:{" "}
+                    {getQuantity(item)}
+                  </p>
+                  <p className="item-price">
+                    {(getPrice(item) * getQuantity(item)).toLocaleString()}₫
+                  </p>
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
         </div>
 
         <div className="checkout-right">
           <h3>Thông tin giao hàng</h3>
-
           <div className="summary-card">
             <div className="summary-row total">
               <span>Tổng thanh toán:</span>
@@ -165,17 +146,14 @@ const Checkout = ({ cart, clearCart }) => {
               <label>Địa chỉ nhận hàng</label>
               <input
                 type="text"
-                placeholder="Số nhà, tên đường, phường/xã..."
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
               />
             </div>
-
             <div className="form-group">
               <label>Số điện thoại</label>
               <input
                 type="text"
-                placeholder="Nhập số điện thoại nhận hàng"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
               />
@@ -190,15 +168,17 @@ const Checkout = ({ cart, clearCart }) => {
                   }`}
                   onClick={() => setPaymentMethod("COD")}
                 >
-                  Tiền mặt (COD)
+                  {" "}
+                  Tiền mặt (COD){" "}
                 </button>
                 <button
                   className={`method-btn ${
-                    paymentMethod === "VNPay" ? "active" : ""
+                    paymentMethod === "VNPAY" ? "active" : ""
                   }`}
                   onClick={() => setPaymentMethod("VNPAY")}
                 >
-                  Chuyển khoản / Ví
+                  {" "}
+                  Thanh toán online{" "}
                 </button>
               </div>
             </div>

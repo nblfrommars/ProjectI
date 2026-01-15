@@ -43,13 +43,19 @@ export default function Cart() {
       setLoading(false);
     }
   };
+
   useEffect(() => {
     fetchCart();
   }, []);
 
-  const changeQty = async (cartId, currentQty, amount) => {
+  const changeQty = async (cartId, currentQty, amount, stockAvailable) => {
     const newQty = currentQty + amount;
     if (newQty < 1) return;
+
+    if (amount > 0 && newQty > stockAvailable) {
+      alert(`Rất tiếc, size này đã không còn thêm cho bạn đặt mất rồi!.`);
+      return;
+    }
 
     try {
       const res = await fetch(`${API_BASE_URL}/api/cart/update/${cartId}`, {
@@ -68,7 +74,8 @@ export default function Cart() {
         setCart(updatedCart);
         syncToLocalStorage(updatedCart);
       } else {
-        alert("Không thể cập nhật số lượng.");
+        const errorData = await res.json();
+        alert(errorData.message || "Không thể cập nhật số lượng.");
       }
     } catch (err) {
       console.error("Lỗi cập nhật số lượng:", err);
@@ -76,6 +83,7 @@ export default function Cart() {
   };
 
   const removeItem = async (cartId) => {
+    if (!window.confirm("Bạn muốn xóa sản phẩm này khỏi giỏ hàng?")) return;
     try {
       const res = await fetch(`${API_BASE_URL}/api/cart/remove/${cartId}`, {
         method: "DELETE",
@@ -97,9 +105,11 @@ export default function Cart() {
   };
 
   const subtotal = cart.reduce(
-    (sum, item) => sum + item.product.price * item.quantity,
+    (sum, item) =>
+      sum + (item.productVariant?.product?.price || 0) * item.quantity,
     0
   );
+
   const handleGoToCheckout = () => {
     if (cart.length === 0) {
       alert("Giỏ hàng của bạn đang trống!");
@@ -120,70 +130,88 @@ export default function Cart() {
 
   return (
     <div className="cart-container">
-      <h1>Giỏ hàng</h1>
+      <h1>Giỏ hàng của bạn</h1>
 
       {!user ? (
         <p className="empty">Vui lòng đăng nhập để xem giỏ hàng.</p>
       ) : cart.length === 0 ? (
-        <p className="empty">Giỏ hàng đang trống.</p>
+        <p className="empty">Giỏ hàng của bạn đang trống. Mua sắm ngay!</p>
       ) : (
         <>
           <ul className="cart-list">
-            {cart.map((item) => (
-              <li key={item.cartId} className="cart-item">
-                <div className="left">
-                  <img
-                    src={getFullImageUrl(item.product.imageUrl)}
-                    alt={item.product.productName}
-                    className="thumb"
-                    onError={(e) => {
-                      e.target.src = "https://via.placeholder.com/80";
-                    }}
-                  />
-                  <div>
-                    <p className="name">{item.product.productName}</p>
-                    <p className="size">Size: {item.size}</p>
-                    <p className="price">
-                      {item.product.price.toLocaleString()}₫
-                    </p>
-                  </div>
-                </div>
+            {cart.map((item) => {
+              const product = item.productVariant?.product;
+              const variant = item.productVariant;
 
-                <div className="right">
-                  <div className="qty">
+              return (
+                <li key={item.cartId} className="cart-item">
+                  <div className="left">
+                    <img
+                      src={getFullImageUrl(product?.imageUrl)}
+                      alt={product?.productName}
+                      className="thumb"
+                      onError={(e) => {
+                        e.target.src = "https://via.placeholder.com/80";
+                      }}
+                    />
+                    <div>
+                      <p className="name">{product?.productName}</p>
+                      <p className="size">Size: {variant?.size}</p>
+                      <p className="price">
+                        {product?.price?.toLocaleString()}₫
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="right">
+                    <div className="qty">
+                      <button
+                        onClick={() =>
+                          changeQty(
+                            item.cartId,
+                            item.quantity,
+                            -1,
+                            variant?.stock
+                          )
+                        }
+                      >
+                        -
+                      </button>
+                      <span>{item.quantity}</span>
+                      <button
+                        onClick={() =>
+                          changeQty(
+                            item.cartId,
+                            item.quantity,
+                            1,
+                            variant?.stock
+                          )
+                        }
+                      >
+                        +
+                      </button>
+                    </div>
                     <button
-                      onClick={() => changeQty(item.cartId, item.quantity, -1)}
+                      className="remove"
+                      onClick={() => removeItem(item.cartId)}
                     >
-                      {" "}
-                      -{" "}
-                    </button>
-                    <span>{item.quantity}</span>
-                    <button
-                      onClick={() => changeQty(item.cartId, item.quantity, 1)}
-                    >
-                      {" "}
-                      +{" "}
+                      Xóa
                     </button>
                   </div>
-                  <button
-                    className="remove"
-                    onClick={() => removeItem(item.cartId)}
-                  >
-                    {" "}
-                    Xóa{" "}
-                  </button>
-                </div>
-              </li>
-            ))}
+                </li>
+              );
+            })}
           </ul>
 
           <div className="summary">
             <div className="row">
-              <span>Tạm tính:</span>
-              <strong>{subtotal.toLocaleString()}₫</strong>
+              <span>Tổng tiền:</span>
+              <strong className="total-price">
+                {subtotal.toLocaleString()}₫
+              </strong>
             </div>
             <button className="checkout-btn" onClick={handleGoToCheckout}>
-              Đặt Hàng
+              Tiến hành thanh toán
             </button>
           </div>
         </>

@@ -23,15 +23,6 @@ public class DataInitializer {
     ) {
         return args -> {
             try {
-                System.out.println(">>> Đang dọn dẹp Database...");
-                
-                orderItemRepository.deleteAll();
-                orderRepository.deleteAll();
-                cartRepository.deleteAll();
-                productRepository.deleteAll();
-                categoryRepository.deleteAll();
-                userRepository.deleteAll();
-
                 System.out.println(">>> Đang khởi tạo tài khoản Admin...");
                 
                 User admin = new User();

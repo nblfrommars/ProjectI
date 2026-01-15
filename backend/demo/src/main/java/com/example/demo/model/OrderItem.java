@@ -3,6 +3,7 @@ package com.example.demo.model;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.example.demo.model.ProductVariant;
 
 @Entity
 @Table(name = "order_items")
@@ -18,29 +19,25 @@ public class OrderItem {
     private Order order;
 
     @ManyToOne
-    @JoinColumn(name = "product_id", nullable = false)
-    @JsonIgnoreProperties({"orderItems", "carts"}) 
-    private Product product;
+    @JoinColumn(name = "variant_id", nullable = false)
+    @JsonIgnoreProperties({"orderItems", "product"}) 
+    private ProductVariant productVariant;
 
     private Integer quantity;
 
     @Column(precision = 10, scale = 2)
-    private BigDecimal price;
+    private BigDecimal price; 
 
-     @Column(precision = 10, scale = 2)
+    @Column(precision = 10, scale = 2)
     private BigDecimal subTotal;
-
-    @Column(length = 10)
-    private String size;
 
     public OrderItem() {}
 
-    public OrderItem(Order order, Product product, Integer quantity, BigDecimal price, String size) {
+    public OrderItem(Order order, ProductVariant variant, Integer quantity, BigDecimal price) {
         this.order = order;
-        this.product = product;
+        this.productVariant = variant;
         this.quantity = quantity;
         this.price = price;
-        this.size = size;
         if (price != null && quantity != null) {
             this.subTotal = price.multiply(new BigDecimal(quantity));
         }
@@ -62,13 +59,13 @@ public class OrderItem {
         this.order = order;
     }
 
-    public Product getProduct() {
-        return product;
+    public ProductVariant getProductVariant() { return productVariant; }
+    public void setProductVariant(ProductVariant productVariant) { this.productVariant = productVariant; }
+
+    public String getSize() {
+        return (productVariant != null) ? productVariant.getSize() : null;
     }
 
-    public void setProduct(Product product) {
-        this.product = product;
-    }
 
     public Integer getQuantity() {
         return quantity;
@@ -84,14 +81,6 @@ public class OrderItem {
 
     public void setPrice(BigDecimal price) {
         this.price = price;
-    }
-
-    public String getSize() {
-        return size;
-    }
-
-    public void setSize(String size) {
-        this.size = size;
     }
 
     public BigDecimal getSubTotal() {
