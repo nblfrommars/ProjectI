@@ -6,6 +6,7 @@ const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));
+  const token = localStorage.getItem("token");
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -38,12 +39,11 @@ const ProductDetail = () => {
 
   const handleAddToCart = async () => {
     if (isOutOfStock) return;
-    if (!user) {
+    if (!user || !token) {
       alert("Vui lòng đăng nhập để thêm vào giỏ hàng!");
       navigate("/login");
       return;
     }
-    const userId = user.id || user.userId;
     const cartItem = {
       userId: user.id,
       productId: product.productId,
@@ -56,15 +56,19 @@ const ProductDetail = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(cartItem),
       });
 
       if (response.ok) {
         alert(`Đã thêm ${product.productName} (size ${size}) vào giỏ hàng!`);
+      } else if (response.status === 401 || response.status === 403) {
+        alert("Phiên đăng nhập hết hạn, vui lòng đăng nhập lại.");
+        navigate("/login");
       } else {
         const errorData = await response.json();
-        alert("Lỗi: " + errorData.message);
+        alert("Lỗi: " + (errorData.message || "Không thể thêm vào giỏ hàng"));
       }
     } catch (err) {
       console.error("Lỗi khi thêm vào giỏ hàng:", err);

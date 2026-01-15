@@ -11,6 +11,7 @@ const Login = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setError("");
 
     try {
       const res = await fetch("http://localhost:8080/api/auth/login", {
@@ -24,14 +25,11 @@ const Login = () => {
         setError(text || "Email hoặc mật khẩu không đúng");
         return;
       }
-
       const data = await res.json();
-
       //luu vao de giu cho cac component khac hoat dong
-      localStorage.setItem("user", JSON.stringify(data));
-
-      // dieu huong
-      if (data.role === "admin") {
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      if (data.user.role === "admin") {
         navigate("/admin");
       } else {
         navigate("/");

@@ -50,7 +50,7 @@ public class ProductService {
         p.setProductName(details.getProductName());
         p.setPrice(details.getPrice());
         p.setDes(details.getDes());
-        p.setStock(details.getStock());
+        p.setStock(p.getStock() + details.getStock());
         
          if (details.getCategory() != null && details.getCategory().getCategoryId() != null) {
         Category cat = categoryRepository.findById(details.getCategory().getCategoryId())

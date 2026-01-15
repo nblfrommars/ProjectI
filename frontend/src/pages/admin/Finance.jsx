@@ -27,13 +27,19 @@ const Finance = () => {
 
     setLoading(true);
     try {
+      const token = localStorage.getItem("token");
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        params: { startDate, endDate },
+      };
       const [summaryRes, productRes] = await Promise.all([
-        axios.get(`http://localhost:8080/api/statistics/range-summary`, {
-          params: { startDate, endDate },
-        }),
-        axios.get(`http://localhost:8080/api/statistics/product-report`, {
-          params: { startDate, endDate },
-        }),
+        axios.get(`http://localhost:8080/api/statistics/range-summary`, config),
+        axios.get(
+          `http://localhost:8080/api/statistics/product-report`,
+          config
+        ),
       ]);
 
       setSummary({
@@ -43,7 +49,14 @@ const Finance = () => {
       setProductData(productRes.data);
     } catch (error) {
       console.error("Lỗi khi tải báo cáo tài chính:", error);
-      alert("Không thể tải dữ liệu báo cáo.");
+      if (
+        error.response &&
+        (error.response.status === 401 || error.response.status === 403)
+      ) {
+        alert("Phiên đăng nhập hết hạn hoặc bạn không có quyền Admin!");
+      } else {
+        alert("Không thể tải dữ liệu báo cáo.");
+      }
     } finally {
       setLoading(false);
     }

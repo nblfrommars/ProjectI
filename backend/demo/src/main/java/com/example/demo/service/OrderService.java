@@ -87,6 +87,7 @@ public class OrderService {
         res.setOrderId(order.getOrderId());
         if (order.getUser() != null) {
         res.setUserId(order.getUser().getId()); 
+        res.setEmail(order.getUser().getEmail()); 
     }
         res.setTotalPrice(order.getTotalPrice());
         res.setStatus(order.getStatus());

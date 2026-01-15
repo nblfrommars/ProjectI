@@ -51,6 +51,7 @@ public class OrderDTO {
         private Integer orderId;
         private Integer userId;
         private BigDecimal totalPrice;
+        private String email;  
         private String status;
         private Timestamp createdAt;
         private String phoneNumber;
@@ -86,6 +87,9 @@ public class OrderDTO {
 
         public Integer getUserId() {return userId;}
         public void setUserId(Integer userId) {this.userId = userId;}
+        
+        public String getEmail() { return email; }
+        public void setEmail(String email) { this.email = email; }
     }
 
     public static class OrderItemResponse {

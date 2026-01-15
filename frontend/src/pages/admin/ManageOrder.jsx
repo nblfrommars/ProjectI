@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import styles from "../../styles/ManageOrder.module.css";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
+import html2pdf from "html2pdf.js";
+
 const STATUS_OPTIONS = [
   { value: "pending", label: "Chờ xử lý" },
   { value: "confirmed", label: "Đã xác nhận" },
@@ -34,7 +34,12 @@ const ManageOrder = () => {
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`http://localhost:8080/api/orders`);
+      const token = localStorage.getItem("token");
+      const response = await axios.get("http://localhost:8080/api/orders", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       setOrders(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error("Lỗi khi fetch đơn hàng:", error);
@@ -53,10 +58,16 @@ const ManageOrder = () => {
     }
 
     try {
+      const token = localStorage.getItem("token");
       const response = await axios.put(
         `http://localhost:8080/api/orders/${orderId}/status`,
         null,
-        { params: { status: newStatus } }
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          params: { status: newStatus },
+        }
       );
 
       setOrders((prevOrders) =>
@@ -80,61 +91,78 @@ const ManageOrder = () => {
       return sortOrder === "desc" ? dateB - dateA : dateA - dateB;
     });
   const handlePrintLabel = (order) => {
-    const doc = new jsPDF({
-      orientation: "p",
-      unit: "mm",
-      format: "a5",
-    });
+    const element = document.createElement("div");
 
-    doc.setFontSize(16);
-    doc.text("GLOWAY STORE - Ship Label", 10, 15);
+    element.style.fontFamily = "Arial, sans-serif";
+    element.style.fontSize = "12px";
+    element.style.padding = "10px";
+    element.style.width = "148mm";
 
-    doc.setFontSize(10);
-    doc.text(`Ma don hang: # ${order.orderId}`, 10, 25);
-    doc.text(`Ngay in: ${new Date().toLocaleString("vi-VN")}`, 10, 30);
-    doc.line(10, 32, 138, 32);
+    element.innerHTML = `
+    <h3 style="text-align:center;margin-bottom:8px;">
+      GLOWAY STORE - Shipping Label
+    </h3>
 
-    doc.setFontSize(12);
-    doc.setFont("helvetica", "bold");
-    doc.text("TO (NGUOI NHAN):", 10, 40);
+    <p><strong>Mã đơn hàng:</strong> #${order.orderId}</p>
+    <p><strong>Ngày in:</strong> ${new Date().toLocaleString("vi-VN")}</p>
+    <hr/>
 
-    doc.setFont("helvetica", "normal");
-    doc.text(`Phone: ${order.phoneNumber || "N/A"}`, 10, 47);
+    <p><strong>Người nhận</strong></p>
+    <p>Tên: ${order.email || "N/A"}</p>
+    <p>SĐT: ${order.phoneNumber || "N/A"}</p>
+    <p>Địa chỉ: ${order.address || "N/A"}</p>
+    <p>Thanh toán: ${order.paymentMethod || "N/A"}</p>
+    <table style="width:90%;border-collapse:collapse;margin-top:10px;">
+      <thead>
+        <tr>
+          <th style="border:0.5px solid #000;padding:4px;">Sản phẩm</th>
+          <th style="border:0.5px solid #000;padding:4px;">Size</th>
+          <th style="border:0.5px solid #000;padding:4px;">SL</th>
+          <th style="border:0.5px solid #000;padding:4px;">Giá</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${(order.orderItems || [])
+          .map(
+            (item) => `
+          <tr>
+            <td style="border:0.5px solid #000;padding:4px;">
+              ${item.productName}
+            </td>
+            <td style="border:0.5px solid #000;padding:4px;text-align:center;">
+              ${item.size || "-"}
+            </td>
+            <td style="border:0.5px solid #000;padding:4px;text-align:center;">
+              ${item.quantity}
+            </td>
+            <td style="border:0.5px solid #000;padding:4px;text-align:right;">
+              ${(item.price || 0).toLocaleString()}đ
+            </td>
+          </tr>
+        `
+          )
+          .join("")}
+      </tbody>
+    </table>
 
-    doc.setFont("helvetica", "normal");
-    doc.text(`Address: ${order.address || "N/A"}`, 10, 54);
+    <h4 style="margin-top:10px;">
+      Tổng tiền hàng: ${(order.totalPrice || 0).toLocaleString()} VNĐ
+    </h4>
 
-    const tableColumn = ["San pham", "Size", "SL", "Gia"];
-    const tableRows = (order.orderItems || []).map((item) => [
-      item.productName,
-      item.size || "-",
-      item.quantity,
-      `${(item.price || 0).toLocaleString()}d`,
-    ]);
+    <p style="font-style:italic;margin-top:10px;">
+      Cảm ơn bạn đã mua hàng tại GLOWAY!
+    </p>
+  `;
 
-    autoTable(doc, {
-      startY: 70,
-      head: [tableColumn],
-      body: tableRows,
-      theme: "grid",
-      headStyles: { fillColor: [0, 0, 0] },
-      styles: { fontSize: 9 },
-    });
-
-    const finalY = doc.lastAutoTable.finalY + 10;
-    doc.setFontSize(13);
-    doc.setFont("helvetica", "bold");
-    doc.text(
-      `TONG CONG: ${(order.totalPrice || 0).toLocaleString()} VND`,
-      10,
-      finalY
-    );
-
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "italic");
-    doc.text("Cam on ban da mua hang tai GLOWAY!", 10, finalY + 10);
-
-    doc.save(`Label_Order_${order.orderId}.pdf`);
+    html2pdf()
+      .set({
+        margin: 5,
+        filename: `Label_Order_${order.orderId}.pdf`,
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: "mm", format: "a5", orientation: "p" },
+      })
+      .from(element)
+      .save();
   };
 
   if (loading) return <div className={styles.loading}>Đang tải dữ liệu...</div>;

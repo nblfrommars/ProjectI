@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "../../styles/OrderHistory.css";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const IMAGE_BASE_URL = "http://localhost:8080";
 const DEFAULT_IMAGE = "https://via.placeholder.com/80?text=No+Image";
@@ -8,12 +9,14 @@ const DEFAULT_IMAGE = "https://via.placeholder.com/80?text=No+Image";
 const statusColors = {
   pending: "#fbc02d",
   confirmed: "#4fc3f7",
-  shipping: "#1976d2",
+  shipped: "#1976d2",
   delivered: "#388e3c",
   cancelled: "#d32f2f",
 };
 
 const OrderHistory = () => {
+  const navigate = useNavigate();
+  const [token] = useState(localStorage.getItem("token"));
   const [userId] = useState(() => {
     const saved = localStorage.getItem("user");
     if (saved) {
@@ -29,7 +32,7 @@ const OrderHistory = () => {
   const [sortOrder, setSortOrder] = useState("desc");
 
   useEffect(() => {
-    if (!userId) {
+    if (!userId || !token) {
       setLoading(false);
       return;
     }
@@ -38,11 +41,18 @@ const OrderHistory = () => {
       try {
         setLoading(true);
         const response = await axios.get(
-          `http://localhost:8080/api/orders/user/${userId}`
+          `http://localhost:8080/api/orders/user/${userId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
         );
         setOrders(response.data);
       } catch (error) {
         console.error("Lỗi khi fetch đơn hàng:", error);
+        if (error.response?.status === 401 || error.response?.status === 403) {
+          alert("Phiên đăng nhập hết hạn, vui lòng đăng nhập lại.");
+          navigate("/login");
+        }
       } finally {
         setLoading(false);
       }
@@ -82,21 +92,15 @@ const OrderHistory = () => {
           null,
           {
             params: { status: "cancelled" },
+            headers: { Authorization: `Bearer ${token}` },
           }
         );
 
-        setOrders((prevOrders) =>
-          prevOrders.map((order) =>
-            order.orderId === orderId
-              ? { ...order, status: "cancelled" }
-              : order
-          )
-        );
-
+        updateLocalOrderStatus(orderId, "cancelled");
         alert("Hủy đơn hàng thành công!");
       } catch (error) {
         console.error("Lỗi khi hủy đơn:", error);
-        alert("Không thể hủy đơn hàng. Vui lòng thử lại sau.");
+        alert("Không thể hủy đơn hàng lúc này.");
       }
     }
   };
@@ -108,16 +112,19 @@ const OrderHistory = () => {
         await axios.put(
           `http://localhost:8080/api/orders/${orderId}/status`,
           null,
-          { params: { status: "delivered" } }
+          {
+            params: { status: "delivered" },
+            headers: { Authorization: `Bearer ${token}` },
+          }
         );
         updateLocalOrderStatus(orderId, "delivered");
+        alert("Cảm ơn bạn đã mua hàng!");
       } catch (error) {
         console.error("Lỗi xác nhận nhận hàng:", error);
         alert("Có lỗi xảy ra, vui lòng thử lại sau.");
       }
     }
   };
-
   if (loading)
     return <div className="loading">Đang tải lịch sử đơn hàng...</div>;
 

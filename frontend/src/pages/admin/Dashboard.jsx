@@ -10,29 +10,47 @@ const Dashboard = () => {
     lastUpdated: "",
   });
   const [loading, setLoading] = useState(true);
+
   const fetchTodayStats = async () => {
     try {
+      const token = localStorage.getItem("token");
       const response = await axios.get(
-        "http://localhost:8080/api/statistics/today"
+        "http://localhost:8080/api/statistics/today",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
       const data = response.data;
 
       setStats({
-        dailyOrders: data.orderCount,
+        dailyOrders: data.orderCount || 0,
         revenue: data.totalRevenue || 0,
         topProduct:
-          data.bestSellingProducts.length > 0
+          data.bestSellingProducts && data.bestSellingProducts.length > 0
             ? data.bestSellingProducts.join(", ")
             : "Chưa có đơn hàng",
         lastUpdated: new Date().toLocaleString("vi-VN"),
       });
     } catch (error) {
       console.error("Lỗi khi lấy thống kê Dashboard:", error);
-      setStats((prev) => ({ ...prev, topProduct: "Lỗi tải dữ liệu" }));
+      if (
+        error.response &&
+        (error.response.status === 403 || error.response.status === 401)
+      ) {
+        setStats((prev) => ({
+          ...prev,
+          topProduct: "Phiên đăng nhập hết hạn",
+        }));
+      } else {
+        setStats((prev) => ({ ...prev, topProduct: "Lỗi tải dữ liệu" }));
+      }
     } finally {
       setLoading(false);
     }
   };
+
   useEffect(() => {
     fetchTodayStats();
   }, []);

@@ -9,6 +9,7 @@ export default function Cart() {
   const [cart, setCart] = useState([]);
   const [loading, setLoading] = useState(true);
   const user = JSON.parse(localStorage.getItem("user"));
+  const token = localStorage.getItem("token");
 
   const syncToLocalStorage = (cartData) => {
     localStorage.setItem("cart", JSON.stringify(cartData));
@@ -17,7 +18,22 @@ export default function Cart() {
   const fetchCart = async () => {
     if (!user) return;
     try {
-      const res = await fetch(`${API_BASE_URL}/api/cart/${user.id}`);
+      const res = await fetch(`${API_BASE_URL}/api/cart/${user.id}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (res.status === 401 || res.status === 403) {
+        alert("Phiên đăng nhập hết hạn, vui lòng đăng nhập lại.");
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        navigate("/login");
+        return;
+      }
+
       const data = await res.json();
       setCart(data);
       syncToLocalStorage(data);
@@ -27,7 +43,6 @@ export default function Cart() {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     fetchCart();
   }, []);
@@ -39,15 +54,21 @@ export default function Cart() {
     try {
       const res = await fetch(`${API_BASE_URL}/api/cart/update/${cartId}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({ quantity: newQty }),
       });
+
       if (res.ok) {
         const updatedCart = cart.map((item) =>
           item.cartId === cartId ? { ...item, quantity: newQty } : item
         );
         setCart(updatedCart);
         syncToLocalStorage(updatedCart);
+      } else {
+        alert("Không thể cập nhật số lượng.");
       }
     } catch (err) {
       console.error("Lỗi cập nhật số lượng:", err);
@@ -55,15 +76,20 @@ export default function Cart() {
   };
 
   const removeItem = async (cartId) => {
-    if (!window.confirm("Bạn có chắc muốn xóa sản phẩm này?")) return;
     try {
       const res = await fetch(`${API_BASE_URL}/api/cart/remove/${cartId}`, {
         method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
+
       if (res.ok) {
         const updatedCart = cart.filter((item) => item.cartId !== cartId);
         setCart(updatedCart);
         syncToLocalStorage(updatedCart);
+      } else {
+        alert("Xóa sản phẩm thất bại.");
       }
     } catch (err) {
       console.error("Lỗi xóa sản phẩm:", err);

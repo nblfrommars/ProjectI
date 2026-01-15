@@ -16,6 +16,7 @@ const Checkout = ({ cart, clearCart }) => {
     buyNowItem || (cart && cart.length > 0 ? cart : cartFromStorage);
 
   const user = JSON.parse(localStorage.getItem("user") || "null");
+  const token = localStorage.getItem("token");
 
   const [address, setAddress] = useState(user?.address || "");
   const [phone, setPhone] = useState(user?.phone || "");
@@ -59,14 +60,24 @@ const Checkout = ({ cart, clearCart }) => {
     try {
       const response = await axios.post(
         `${API_BASE_URL}/api/orders/create`,
-        orderRequest
+        orderRequest,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
 
       if (response.status === 200 || response.status === 201) {
         if (!buyNowItem) {
           try {
             await axios.delete(
-              `${API_BASE_URL}/api/cart/clear/${user.id || user.userId}` //xoa gio hang o ca local va database neu dat hang o cart
+              `${API_BASE_URL}/api/cart/clear/${user.id || user.userId}`,
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              }
             );
             clearCart?.();
             localStorage.removeItem("cart");
@@ -79,10 +90,14 @@ const Checkout = ({ cart, clearCart }) => {
       }
     } catch (error) {
       console.error("Lỗi khi đặt hàng:", error);
-      alert("Đặt hàng thất bại: " + (error.response?.data || "Lỗi máy chủ"));
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        alert("Phiên đăng nhập hết hạn, vui lòng đăng nhập lại.");
+        navigate("/login");
+      } else {
+        alert("Đặt hàng thất bại: " + (error.response?.data || "Lỗi máy chủ"));
+      }
     }
   };
-
   const getImageUrl = (url) => {
     if (!url) return "https://via.placeholder.com/80?text=No+Image";
     if (url.startsWith("http")) return url;

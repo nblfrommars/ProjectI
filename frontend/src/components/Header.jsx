@@ -1,4 +1,4 @@
-import { useState } from "react"; // 1. Thêm useState
+import { useState } from "react";
 import Logo from "../assets/images.png";
 import shopIcon from "../assets/shop.jpg";
 import cartIcon from "../assets/shopping-cart.jpg";
@@ -11,14 +11,15 @@ const Header = ({ user, onLogout }) => {
 
   const [searchTerm, setSearchTerm] = useState("");
 
+  // Lấy tên hiển thị: Ưu tiên userName, nếu không có thì dùng email
   const displayName = user?.email ? user.email.split("@")[0] : "";
 
   const linkStyle = (path) => ({
     display: "flex",
     alignItems: "center",
     textDecoration: "none",
-    color: location.pathname === path ? "#318be5ff" : "#333",
-    fontWeight: location.pathname === path ? "bold" : "normal",
+    color: location.pathname.startsWith(path) ? "#318be5ff" : "#333",
+    fontWeight: location.pathname.startsWith(path) ? "bold" : "normal",
   });
 
   const handleSearch = (e) => {
@@ -49,7 +50,6 @@ const Header = ({ user, onLogout }) => {
           />
         </Link>
       </div>
-
       <form
         onSubmit={handleSearch}
         style={{
@@ -66,9 +66,8 @@ const Header = ({ user, onLogout }) => {
           onChange={(e) => setSearchTerm(e.target.value)}
           style={{
             width: "100%",
-            padding: "8px 15px",
-            borderRadius: "20px",
             padding: "10px 45px 10px 20px",
+            borderRadius: "20px",
             border: "1px solid #ccc",
             outline: "none",
             fontSize: "14px",
@@ -125,6 +124,12 @@ const Header = ({ user, onLogout }) => {
           />
           <strong>Our Store</strong>
         </Link>
+        {user?.role === "admin" && (
+          <Link to="/admin/dashboard" style={linkStyle("/admin")}>
+            <span style={{ fontSize: "18px", marginRight: "5px" }}>⚙️</span>
+            <strong>Admin Panel</strong>
+          </Link>
+        )}
 
         {user?.role === "user" && (
           <>

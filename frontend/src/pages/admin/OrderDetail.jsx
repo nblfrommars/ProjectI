@@ -29,6 +29,8 @@ const OrderDetail = () => {
   const [loading, setLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
 
+  const getToken = () => localStorage.getItem("token");
+
   useEffect(() => {
     fetchOrderDetail();
   }, [orderId]);
@@ -36,21 +38,33 @@ const OrderDetail = () => {
   const fetchOrderDetail = async () => {
     try {
       setLoading(true);
+      const token = getToken();
+
       const response = await axios.get(
-        `http://localhost:8080/api/orders/${orderId}`
+        `http://localhost:8080/api/orders/${orderId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
       );
       setOrder(response.data);
     } catch (error) {
       console.error("Lỗi:", error);
-      alert("Không tìm thấy đơn hàng!");
-      navigate("/admin/orders");
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        alert("Phiên đăng nhập hết hạn hoặc bạn không có quyền Admin!");
+        navigate("/login");
+      } else {
+        alert("Không tìm thấy đơn hàng!");
+        navigate("/admin/orders");
+      }
     } finally {
       setLoading(false);
     }
   };
+
   const isFinalStatus =
     order?.status?.toLowerCase() === "cancelled" ||
     order?.status?.toLowerCase() === "delivered";
+
   const handleStatusChange = async (event) => {
     const newStatus = event.target.value;
 
@@ -65,13 +79,19 @@ const OrderDetail = () => {
 
     try {
       setIsUpdating(true);
+      const token = getToken();
+
       const response = await axios.put(
         `http://localhost:8080/api/orders/${orderId}/status`,
         null,
-        { params: { status: newStatus } }
+        {
+          params: { status: newStatus },
+          headers: { Authorization: `Bearer ${token}` },
+        }
       );
 
       setOrder(response.data);
+      alert("Cập nhật trạng thái thành công!");
     } catch (error) {
       console.error("Lỗi cập nhật:", error);
       alert("Cập nhật thất bại. Vui lòng thử lại.");
@@ -80,7 +100,6 @@ const OrderDetail = () => {
     }
   };
 
-  const getCustomerId = () => (order?.userId ? `KH-${order.userId}` : "N/A");
   const getFormattedTotal = () =>
     (order?.totalPrice || 0).toLocaleString() + "đ";
 
@@ -159,7 +178,7 @@ const OrderDetail = () => {
               </span>
             </p>
             <p>
-              <strong>Mã khách hàng:</strong> {getCustomerId()}
+              <strong>Email:</strong> {order.email || "N/A"}
             </p>
             <p>
               <strong>Thanh toán:</strong> {order.paymentMethod || "COD"}

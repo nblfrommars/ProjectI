@@ -4,7 +4,7 @@ import "../styles/ProductCard.css";
 const ProductCard = ({ product, baseUrl }) => {
   const getImageUrl = (url) => {
     if (!url) return "https://via.placeholder.com/150";
-    if (url.startsWith("http")) return url; //neu nhung anh tu ben khac ve thi hien thi luon
+    if (url.startsWith("http")) return url;
     return `${baseUrl}${url}`;
   };
   return (

@@ -161,7 +161,7 @@ export default function ProductFormModal({
         </div>
 
         <div className="form-group">
-          <label>Số lượng kho</label>
+          <label>Lượng thêm vào kho</label>
           <input
             type="number"
             name="stock"

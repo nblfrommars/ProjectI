@@ -44,7 +44,6 @@ const Home = () => {
         />
       </div>
 
-      {/* san pham moi */}
       <div className="home-products">
         <h1 style={{ color: "#020101ff" }}>Đặc biệt cho mùa này</h1>
         <div className="home-products-grid">
