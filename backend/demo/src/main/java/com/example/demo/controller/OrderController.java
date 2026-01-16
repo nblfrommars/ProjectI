@@ -48,7 +48,7 @@ public class OrderController {
         String orderId = request.getParameter("vnp_TxnRef");
 
         if (result == 1) {
-            return new RedirectView("http://localhost:3000/payment/success?orderId=" + orderId);
+            return new RedirectView("http://localhost:3000/orders");
         } else {
             return new RedirectView("http://localhost:3000/payment/fail");
         }

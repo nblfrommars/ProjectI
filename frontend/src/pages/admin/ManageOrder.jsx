@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import styles from "../../styles/ManageOrder.module.css";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import html2pdf from "html2pdf.js";
+import html2pdf from "html2pdf.js/dist/html2pdf.min.js";
 
 const STATUS_OPTIONS = [
   { value: "pending", label: "Chờ xử lý" },

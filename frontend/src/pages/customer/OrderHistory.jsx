@@ -6,6 +6,218 @@ import { useNavigate } from "react-router-dom";
 const IMAGE_BASE_URL = "http://localhost:8080";
 const DEFAULT_IMAGE = "https://via.placeholder.com/80?text=No+Image";
 
+const modalStyles = {
+  overlay: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 1000,
+    padding: "20px",
+  },
+  container: {
+    backgroundColor: "#fff",
+    borderRadius: "12px",
+    width: "100%",
+    maxWidth: "450px",
+    padding: "25px",
+    boxShadow: "0 10px 30px rgba(0,0,0,0.3)",
+    color: "#333",
+  },
+  textarea: {
+    width: "100%",
+    marginTop: "15px",
+    padding: "12px",
+    borderRadius: "8px",
+    border: "1px solid #ddd",
+    fontSize: "14px",
+    minHeight: "100px",
+    outline: "none",
+    boxSizing: "border-box",
+    fontFamily: "inherit",
+  },
+  btnGroup: { display: "flex", gap: "10px", marginTop: "20px" },
+  btnCancel: {
+    flex: 1,
+    padding: "10px",
+    backgroundColor: "#eee",
+    border: "none",
+    borderRadius: "8px",
+    cursor: "pointer",
+  },
+  btnSubmit: (color) => ({
+    flex: 1,
+    padding: "10px",
+    backgroundColor: color,
+    color: "#fff",
+    border: "none",
+    borderRadius: "8px",
+    cursor: "pointer",
+    fontWeight: "bold",
+  }),
+};
+
+const StarRating = ({ rating, setRating }) => {
+  return (
+    <div style={{ display: "flex", gap: "8px" }}>
+      {[1, 2, 3, 4, 5].map((s) => (
+        <span
+          key={s}
+          onClick={() => {
+            console.log("Bạn đã chọn sao số:", s);
+            setRating(s);
+          }}
+          style={{
+            cursor: "pointer",
+            fontSize: "35px",
+            color: s <= rating ? "#ffc107" : "#e0e0e0",
+            transition: "color 0.2s",
+            userSelect: "none",
+          }}
+        >
+          ★
+        </span>
+      ))}
+    </div>
+  );
+};
+
+const ProductReviewModal = ({ isOpen, onClose, item, userId, token }) => {
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState("");
+
+  if (!isOpen || !item) return null;
+
+  const handleSubmit = async () => {
+    try {
+      await axios.post(
+        "http://localhost:8080/api/reviews/add",
+        {
+          userId,
+          orderItemId: item.orderItemId,
+          rating,
+          comment,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      alert("Cảm ơn đã đánh giá!");
+      onClose();
+    } catch (e) {
+      alert(e.response?.data || "Lỗi khi đánh giá");
+    }
+  };
+
+  return (
+    <div style={modalStyles.overlay}>
+      <div style={modalStyles.container}>
+        <h3 style={{ margin: "0 0 10px" }}>Đánh giá sản phẩm</h3>
+        <p style={{ fontSize: "14px", color: "#666" }}>
+          {item.productName} (Size: {item.size})
+        </p>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            margin: "20px 0",
+          }}
+        >
+          <StarRating rating={rating} setRating={setRating} />
+        </div>
+        <textarea
+          style={modalStyles.textarea}
+          placeholder="Chất lượng sản phẩm thế nào?"
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+        />
+        <div style={modalStyles.btnGroup}>
+          <button style={modalStyles.btnCancel} onClick={onClose}>
+            Hủy
+          </button>
+          <button
+            style={modalStyles.btnSubmit("#1976d2")}
+            onClick={handleSubmit}
+          >
+            Gửi đánh giá
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const OrderReviewModal = ({ isOpen, onClose, orderId, userId, token }) => {
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState("");
+
+  if (!isOpen) return null;
+
+  const handleSubmit = async () => {
+    try {
+      await axios.post(
+        "http://localhost:8080/api/order-reviews/add",
+        {
+          userId,
+          orderId,
+          rating,
+          comment,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      alert("Cảm ơn đã đánh giá!");
+      onClose();
+    } catch (e) {
+      alert(e.response?.data || "Lỗi khi đánh giá");
+    }
+  };
+
+  return (
+    <div style={modalStyles.overlay}>
+      <div style={{ ...modalStyles.container, borderTop: "5px solid #fbc02d" }}>
+        <h3 style={{ margin: "0 0 5px" }}>Đánh giá dịch vụ Shop</h3>
+        <p style={{ fontSize: "12px", color: "#888" }}>
+          Mã đơn hàng: #{orderId}
+        </p>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            margin: "20px 0",
+          }}
+        >
+          <p style={{ fontSize: "14px", marginBottom: "10px" }}>
+            Bạn có hài lòng về dịch vụ của chúng tôi?
+          </p>
+          <StarRating rating={rating} setRating={setRating} />
+        </div>
+        <textarea
+          style={modalStyles.textarea}
+          placeholder="Góp ý cho shop... (Không bắt buộc)"
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+        />
+        <div style={modalStyles.btnGroup}>
+          <button style={modalStyles.btnCancel} onClick={onClose}>
+            Bỏ qua
+          </button>
+          <button
+            style={modalStyles.btnSubmit("#fbc02d")}
+            onClick={handleSubmit}
+          >
+            Hoàn tất
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const statusColors = {
   pending: "#fbc02d",
   paid: "#f74fef",
@@ -32,12 +244,14 @@ const OrderHistory = () => {
   const [filterStatus, setFilterStatus] = useState("All");
   const [sortOrder, setSortOrder] = useState("desc");
 
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [selectedOrderId, setSelectedOrderId] = useState(null);
+
   useEffect(() => {
     if (!userId || !token) {
       setLoading(false);
       return;
     }
-
     const fetchOrders = async () => {
       try {
         setLoading(true);
@@ -49,24 +263,20 @@ const OrderHistory = () => {
         );
         setOrders(response.data);
       } catch (error) {
-        console.error("Lỗi khi fetch đơn hàng:", error);
-        if (error.response?.status === 401 || error.response?.status === 403) {
-          alert("Phiên đăng nhập hết hạn, vui lòng đăng nhập lại.");
-          navigate("/login");
-        }
+        if (error.response?.status === 401) navigate("/login");
       } finally {
         setLoading(false);
       }
     };
-
     fetchOrders();
-  }, [userId]);
+  }, [userId, token, navigate]);
 
-  const getImageUrl = (url) => {
-    if (!url) return DEFAULT_IMAGE;
-    if (url.startsWith("http")) return url;
-    return `${IMAGE_BASE_URL}${url}`;
-  };
+  const getImageUrl = (url) =>
+    url
+      ? url.startsWith("http")
+        ? url
+        : `${IMAGE_BASE_URL}${url}`
+      : DEFAULT_IMAGE;
 
   const filteredOrders = orders
     .filter((order) => filterStatus === "All" || order.status === filterStatus)
@@ -75,18 +285,15 @@ const OrderHistory = () => {
       const dateB = new Date(b.createdAt);
       return sortOrder === "desc" ? dateB - dateA : dateA - dateB;
     });
+
   const updateLocalOrderStatus = (orderId, newStatus) => {
-    setOrders((prevOrders) =>
-      prevOrders.map((order) =>
-        order.orderId === orderId ? { ...order, status: newStatus } : order
-      )
+    setOrders((prev) =>
+      prev.map((o) => (o.orderId === orderId ? { ...o, status: newStatus } : o))
     );
   };
 
   const handleCancelOrder = async (orderId) => {
-    const confirmCancel = window.confirm("Xác nhận hủy đơn?");
-
-    if (confirmCancel) {
+    if (window.confirm("Xác nhận hủy đơn?")) {
       try {
         await axios.put(
           `http://localhost:8080/api/orders/${orderId}/status`,
@@ -96,19 +303,15 @@ const OrderHistory = () => {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
-
         updateLocalOrderStatus(orderId, "cancelled");
-        alert("Hủy đơn hàng thành công!");
-      } catch (error) {
-        console.error("Lỗi khi hủy đơn:", error);
-        alert("Không thể hủy đơn hàng lúc này.");
+      } catch (e) {
+        alert("Không thể hủy đơn.");
       }
     }
   };
-  const handleReceivedOrder = async (orderId) => {
-    const confirmReceived = window.confirm("Xác nhận đã nhận được hàng?");
 
-    if (confirmReceived) {
+  const handleReceivedOrder = async (orderId) => {
+    if (window.confirm("Xác nhận đã nhận được hàng?")) {
       try {
         await axios.put(
           `http://localhost:8080/api/orders/${orderId}/status`,
@@ -119,23 +322,13 @@ const OrderHistory = () => {
           }
         );
         updateLocalOrderStatus(orderId, "delivered");
-        alert("Cảm ơn bạn đã mua hàng!");
-      } catch (error) {
-        console.error("Lỗi xác nhận nhận hàng:", error);
-        alert("Có lỗi xảy ra, vui lòng thử lại sau.");
+      } catch (e) {
+        alert("Có lỗi xảy ra.");
       }
     }
   };
-  if (loading)
-    return <div className="loading">Đang tải lịch sử đơn hàng...</div>;
 
-  if (!userId) {
-    return (
-      <div className="order-history-container">
-        <p className="no-orders">Vui lòng đăng nhập để xem lịch sử đơn hàng.</p>
-      </div>
-    );
-  }
+  if (loading) return <div className="loading">Đang tải...</div>;
 
   return (
     <div className="order-history-container">
@@ -150,13 +343,13 @@ const OrderHistory = () => {
           >
             <option value="All">Tất cả</option>
             <option value="pending">Chờ xử lý</option>
+            <option value="paid">Đã thanh toán</option>
             <option value="confirmed">Đã xác nhận</option>
             <option value="shipped">Đã giao</option>
             <option value="delivered">Đã hoàn thành</option>
             <option value="cancelled">Đã hủy</option>
           </select>
         </div>
-
         <div className="filter-group">
           <label>Sắp xếp:</label>
           <select
@@ -190,30 +383,45 @@ const OrderHistory = () => {
             </div>
 
             <div className="order-products">
-              {order.orderItems &&
-                order.orderItems.map((item, idx) => (
-                  <div key={idx} className="order-product">
-                    <div className="product-info">
-                      <img
-                        src={getImageUrl(item.imageUrl)}
-                        alt={item.productName}
-                        className="order-img-thumb"
-                        onError={(e) => {
-                          e.target.src = DEFAULT_IMAGE;
-                        }}
-                      />
-                      <div className="product-details">
-                        <span className="product-name">{item.productName}</span>
-                        <span className="product-spec">
-                          Size: {item.size} | SL: {item.quantity}
-                        </span>
-                      </div>
+              {order.orderItems?.map((item, idx) => (
+                <div key={idx} className="order-product">
+                  <div className="product-info">
+                    <img
+                      src={getImageUrl(item.imageUrl)}
+                      alt={item.productName}
+                      className="order-img-thumb"
+                    />
+                    <div className="product-details">
+                      <span className="product-name">{item.productName}</span>
+                      <span className="product-spec">
+                        Size: {item.size} | SL: {item.quantity}
+                      </span>
+
+                      {order.status === "delivered" && (
+                        <button
+                          style={{
+                            border: "none",
+                            background: "none",
+                            color: "#1976d2",
+                            cursor: "pointer",
+                            fontSize: "12px",
+                            padding: 0,
+                            textDecoration: "underline",
+                            marginTop: "5px",
+                            textAlign: "left",
+                          }}
+                          onClick={() => setSelectedProduct(item)}
+                        >
+                          Đánh giá sản phẩm
+                        </button>
+                      )}
                     </div>
-                    <span className="product-price">
-                      {item.price.toLocaleString()}₫
-                    </span>
                   </div>
-                ))}
+                  <span className="product-price">
+                    {item.price.toLocaleString()}₫
+                  </span>
+                </div>
+              ))}
             </div>
 
             <div className="order-footer-info">
@@ -235,6 +443,23 @@ const OrderHistory = () => {
                       Đã nhận hàng
                     </button>
                   )}
+
+                  {order.status === "delivered" && (
+                    <button
+                      style={{
+                        padding: "8px 15px",
+                        backgroundColor: "#fff",
+                        border: "1px solid #fb2df4",
+                        color: "#fb2dea",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                        fontWeight: "bold",
+                      }}
+                      onClick={() => setSelectedOrderId(order.orderId)}
+                    >
+                      Đánh giá Shop
+                    </button>
+                  )}
                 </div>
                 <span className="total-price">
                   Tổng cộng:{" "}
@@ -245,6 +470,22 @@ const OrderHistory = () => {
           </div>
         ))
       )}
+
+      <ProductReviewModal
+        isOpen={!!selectedProduct}
+        onClose={() => setSelectedProduct(null)}
+        item={selectedProduct}
+        userId={userId}
+        token={token}
+      />
+
+      <OrderReviewModal
+        isOpen={!!selectedOrderId}
+        onClose={() => setSelectedOrderId(null)}
+        orderId={selectedOrderId}
+        userId={userId}
+        token={token}
+      />
     </div>
   );
 };

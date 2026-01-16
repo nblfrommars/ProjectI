@@ -3,6 +3,14 @@ import { useParams, useNavigate } from "react-router-dom";
 import "../../styles/ProductDetail.css";
 
 const API_BASE_URL = "http://localhost:8080";
+const StaticStars = ({ rating }) => {
+  return (
+    <div style={{ color: "#ffc107", fontSize: "14px" }}>
+      {"★".repeat(rating)}
+      {"☆".repeat(5 - rating)}
+    </div>
+  );
+};
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -11,8 +19,8 @@ const ProductDetail = () => {
   const token = localStorage.getItem("token");
 
   const [product, setProduct] = useState(null);
+  const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
-
   const [selectedVariant, setSelectedVariant] = useState(null);
 
   const getFullImageUrl = (url) => {
@@ -22,11 +30,10 @@ const ProductDetail = () => {
   };
 
   useEffect(() => {
-    const fetchProduct = async () => {
+    const fetchProductAndReviews = async () => {
       try {
         const res = await fetch(`${API_BASE_URL}/api/products/${id}`);
         if (!res.ok) throw new Error("Không tìm thấy sản phẩm");
-
         const data = await res.json();
         setProduct(data);
 
@@ -35,14 +42,36 @@ const ProductDetail = () => {
             data.variants.find((v) => v.stock > 0) || data.variants[0];
           setSelectedVariant(available);
         }
+
+        const revRes = await fetch(`${API_BASE_URL}/api/reviews/product/${id}`);
+        if (revRes.ok) {
+          const revData = await revRes.json();
+          setReviews(revData);
+        }
       } catch (err) {
-        console.error("Lỗi fetch sản phẩm:", err);
+        console.error("Lỗi:", err);
       } finally {
         setLoading(false);
       }
     };
-    fetchProduct();
+    fetchProductAndReviews();
   }, [id]);
+
+  const getCurrentCartFromServer = async () => {
+    if (!user || !token) return [];
+    try {
+      const res = await fetch(
+        `${API_BASE_URL}/api/cart/${user.id || user.userId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      if (res.ok) return await res.json();
+    } catch (err) {
+      console.error("Lỗi lấy giỏ hàng:", err);
+    }
+    return [];
+  };
 
   const handleAddToCart = async () => {
     if (!selectedVariant || selectedVariant.stock <= 0) {
@@ -56,13 +85,24 @@ const ProductDetail = () => {
       return;
     }
 
-    const cartItem = {
-      userId: user.id || user.userId,
-      variantId: selectedVariant.variantId,
-      quantity: 1,
-    };
-
     try {
+      const currentCart = await getCurrentCartFromServer();
+      const existingItem = currentCart.find(
+        (item) => item.productVariant?.variantId === selectedVariant.variantId
+      );
+
+      const currentQtyInCart = existingItem ? existingItem.quantity : 0;
+      if (currentQtyInCart + 1 > selectedVariant.stock) {
+        alert(`Số lượng size này trong giỏ của bạn đã hết trong kho).`);
+        return;
+      }
+
+      const cartItem = {
+        userId: user.id || user.userId,
+        variantId: selectedVariant.variantId,
+        quantity: 1,
+      };
+
       const response = await fetch(`${API_BASE_URL}/api/cart/add`, {
         method: "POST",
         headers: {
@@ -120,9 +160,6 @@ const ProductDetail = () => {
           <img
             src={getFullImageUrl(product.imageUrl)}
             alt={product.productName}
-            onError={(e) => {
-              e.target.src = "https://via.placeholder.com/400";
-            }}
           />
         </div>
 
@@ -137,9 +174,7 @@ const ProductDetail = () => {
                 selectedVariant?.stock > 0 ? "in-stock" : "out-of-stock"
               }
             >
-              {selectedVariant?.stock > 0
-                ? `Còn hàng (Kho: ${selectedVariant.stock})`
-                : "Hết hàng"}
+              {selectedVariant?.stock > 0 ? `Còn hàng` : "Hết hàng"}
             </span>
           </div>
 
@@ -171,7 +206,6 @@ const ProductDetail = () => {
             >
               Thêm vào giỏ hàng
             </button>
-
             <button
               className="buy-now-btn"
               onClick={handleBuyNow}
@@ -181,6 +215,105 @@ const ProductDetail = () => {
             </button>
           </div>
         </div>
+      </div>
+
+      <div
+        style={{
+          marginTop: "50px",
+          borderTop: "1px solid #eee",
+          paddingTop: "30px",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: "20px",
+          }}
+        >
+          <h3 style={{ margin: 0, fontSize: "20px" }}>Đánh giá sản phẩm</h3>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <div style={{ fontSize: "12px", color: "#888" }}>
+              ({reviews.length} đánh giá)
+            </div>
+          </div>
+        </div>
+
+        {reviews.length === 0 ? (
+          <p
+            style={{
+              color: "#999",
+              fontStyle: "italic",
+              textAlign: "center",
+              padding: "20px",
+            }}
+          >
+            Chưa có đánh giá nào cho sản phẩm này.
+          </p>
+        ) : (
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "20px" }}
+          >
+            {reviews.map((rev) => (
+              <div
+                key={rev.reviewId}
+                style={{
+                  borderBottom: "1px solid #f5f5f5",
+                  paddingBottom: "15px",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    marginBottom: "5px",
+                  }}
+                >
+                  <strong style={{ fontSize: "14px", color: "#333" }}>
+                    {rev.email}
+                  </strong>
+                  <span style={{ fontSize: "12px", color: "#aaa" }}>
+                    {new Date(rev.createdAt).toLocaleDateString("vi-VN")}
+                  </span>
+                </div>
+
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "10px",
+                    marginBottom: "8px",
+                  }}
+                >
+                  <StaticStars rating={rev.rating} />
+                  <span
+                    style={{
+                      fontSize: "11px",
+                      backgroundColor: "#f0f0f0",
+                      padding: "2px 6px",
+                      borderRadius: "4px",
+                      color: "#666",
+                    }}
+                  >
+                    Size: {rev.size}
+                  </span>
+                </div>
+
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: "14px",
+                    color: "#444",
+                    lineHeight: "1.6",
+                  }}
+                >
+                  {rev.comment || "Khách hàng không để lại bình luận."}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

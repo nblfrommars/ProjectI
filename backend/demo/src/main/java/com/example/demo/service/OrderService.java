@@ -209,6 +209,7 @@ public class OrderService {
         List<OrderDTO.OrderItemResponse> itemDTOs = order.getOrderItems().stream().map(item -> {
             OrderDTO.OrderItemResponse itemRes = new OrderDTO.OrderItemResponse();
             Product product = item.getProductVariant().getProduct();
+            itemRes.setOrderItemId(item.getOrderItemId());
             
             itemRes.setProductName(product.getProductName());
             itemRes.setImageUrl(product.getImageUrl());

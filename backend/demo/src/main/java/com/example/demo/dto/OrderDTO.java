@@ -77,12 +77,14 @@ public class OrderDTO {
     }
 
     public static class OrderItemResponse {
+        private Integer orderItemId;
         private String productName;
         private String imageUrl;
         private Integer quantity;
         private BigDecimal price;
         private String size;
         private BigDecimal subTotal;
+
 
         public OrderItemResponse() {}
 
@@ -98,5 +100,7 @@ public class OrderDTO {
         public void setSize(String size) { this.size = size; }
         public BigDecimal getSubTotal() { return subTotal; }
         public void setSubTotal(BigDecimal subTotal) { this.subTotal = subTotal; }
+        public Integer getOrderItemId() { return orderItemId; }
+        public void setOrderItemId(Integer orderItemId) { this.orderItemId = orderItemId; }
     }
 }
