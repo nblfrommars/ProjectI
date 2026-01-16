@@ -26,8 +26,8 @@ public class SecurityConfig {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
             .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/api/auth/**", "/api/products/**", "/uploads/**","/api/categories/**").permitAll()
-            .requestMatchers("/api/statistics/**").hasRole("ADMIN") 
+            .requestMatchers("/api/auth/**", "/api/products/**", "/uploads/**","/api/categories/**","/api/orders/vnpay-callback").permitAll()
+            .requestMatchers("/api/statistics/**", "/api/orders").hasRole("ADMIN") 
             .requestMatchers("/api/payment/**").permitAll() 
             .anyRequest().authenticated()
             );

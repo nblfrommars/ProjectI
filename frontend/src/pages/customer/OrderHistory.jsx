@@ -8,6 +8,7 @@ const DEFAULT_IMAGE = "https://via.placeholder.com/80?text=No+Image";
 
 const statusColors = {
   pending: "#fbc02d",
+  paid: "#f74fef",
   confirmed: "#4fc3f7",
   shipped: "#1976d2",
   delivered: "#388e3c",

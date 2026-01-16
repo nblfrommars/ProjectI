@@ -78,6 +78,7 @@ const Checkout = ({ cart, clearCart }) => {
       );
 
       if (response.status === 200 || response.status === 201) {
+        const data = response.data;
         if (!buyNowItem) {
           try {
             await axios.delete(
@@ -90,8 +91,12 @@ const Checkout = ({ cart, clearCart }) => {
             console.error("Lỗi khi xóa giỏ hàng:", clearError);
           }
         }
-        alert("Đặt hàng thành công!");
-        navigate("/orders");
+        if (data.paymentUrl) {
+          window.location.href = data.paymentUrl;
+        } else {
+          alert("Đặt hàng thành công!");
+          navigate("/orders");
+        }
       }
     } catch (error) {
       console.error("Lỗi khi đặt hàng:", error);

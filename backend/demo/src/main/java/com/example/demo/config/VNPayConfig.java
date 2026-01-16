@@ -13,7 +13,7 @@ public class VNPayConfig {
                 throw new NullPointerException();
             }
             final Mac hmac512 = Mac.getInstance("HmacSHA512");
-            byte[] hmacKeyBytes = key.getBytes();
+            byte[] hmacKeyBytes = key.getBytes(StandardCharsets.UTF_8);
             final SecretKeySpec secretKey = new SecretKeySpec(hmacKeyBytes, "HmacSHA512");
             hmac512.init(secretKey);
             byte[] dataBytes = data.getBytes(StandardCharsets.UTF_8);
@@ -29,16 +29,18 @@ public class VNPayConfig {
     }
 
     public static String getIpAddress(HttpServletRequest request) {
-        String ipAdress;
+        String ipAddress;
         try {
-            ipAdress = request.getHeader("X-FORWARDED-FOR");
-            if (ipAdress == null) {
-                ipAdress = request.getRemoteAddr();
+            ipAddress = request.getHeader("X-FORWARDED-FOR");
+            if (ipAddress == null || ipAddress.isEmpty() || "unknown".equalsIgnoreCase(ipAddress)) {
+                ipAddress = request.getRemoteAddr();
+            } else {
+                ipAddress = ipAddress.split(",")[0];
             }
         } catch (Exception e) {
-            ipAdress = "Invalid IP:" + e.getMessage();
+            ipAddress = "127.0.0.1";
         }
-        return ipAdress;
+        return ipAddress;
     }
 
     public static String getRandomNumber(int len) {

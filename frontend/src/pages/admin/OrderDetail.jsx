@@ -8,6 +8,7 @@ const DEFAULT_IMAGE = "https://via.placeholder.com/50?text=No+Img";
 
 const STATUS_OPTIONS = [
   { value: "pending", label: "CHỜ XỬ LÝ" },
+  { value: "paid", label: "ĐÃ THANH TOÁN" },
   { value: "confirmed", label: "ĐÃ XÁC NHẬN" },
   { value: "shipped", label: "ĐÃ GIAO HÀNG" },
   { value: "cancelled", label: "HỦY ĐƠN" },
@@ -16,6 +17,7 @@ const STATUS_OPTIONS = [
 
 const statusColors = {
   pending: "#fbc02d",
+  paid: "#f74fef",
   confirmed: "#4fc3f7",
   shipped: "#1976d2",
   cancelled: "#d32f2f",

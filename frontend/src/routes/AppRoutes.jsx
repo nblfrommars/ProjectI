@@ -17,6 +17,8 @@ import PrivateRoute from "../components/PrivateRoute";
 import Specification from "../pages/customer/Specification";
 import OrderHistory from "../pages/customer/OrderHistory";
 import OrderDetail from "../pages/admin/OrderDetail";
+import PaySuccess from "../pages/customer/Success";
+import PayFail from "../pages/customer/Failed";
 const AppRoutes = () => {
   return (
     <Routes>
@@ -29,6 +31,8 @@ const AppRoutes = () => {
         <Route path="shop" element={<Shop />} />
         <Route path="product/:id" element={<ProductDetail />} />
         <Route path="/specification" element={<Specification />} />
+        <Route path="/payment/success" element={<PaySuccess />} />
+        <Route path="/payment/fail" element={<PayFail />} />
         <Route
           path="cart"
           element={

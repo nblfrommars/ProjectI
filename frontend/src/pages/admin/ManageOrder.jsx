@@ -6,6 +6,7 @@ import html2pdf from "html2pdf.js";
 
 const STATUS_OPTIONS = [
   { value: "pending", label: "Chờ xử lý" },
+  { value: "paid", label: "Đã thanh toán" },
   { value: "confirmed", label: "Đã xác nhận" },
   { value: "shipped", label: "Đã giao" },
   { value: "cancelled", label: "Hủy đơn" },
@@ -14,6 +15,7 @@ const STATUS_OPTIONS = [
 
 const statusColors = {
   pending: "#fbc02d",
+  paid: "#f74fef",
   confirmed: "#4fc3f7",
   shipped: "#1976d2",
   delivered: "#388e3c",
