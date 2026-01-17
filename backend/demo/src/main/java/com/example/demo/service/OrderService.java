@@ -156,10 +156,11 @@ public class OrderService {
         }
 
         String builtHash = VNPayConfig.hmacSHA512(vnp_HashSecret, hashData.toString());
+        Integer orderId = Integer.parseInt(request.getParameter("vnp_TxnRef"));
 
         if (builtHash.equals(vnp_SecureHash)) {
             String responseCode = request.getParameter("vnp_ResponseCode");
-            Integer orderId = Integer.parseInt(request.getParameter("vnp_TxnRef"));
+            
 
             if ("00".equals(responseCode)) {
                 updateOrderStatus(orderId, "paid");
@@ -169,6 +170,7 @@ public class OrderService {
                 return 0;
             }
         }
+        updateOrderStatus(orderId, "cancelled");
         return -1;
     }
 

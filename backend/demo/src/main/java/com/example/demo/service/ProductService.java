@@ -63,13 +63,30 @@ public class ProductService {
         p.setPrice(details.getPrice());
         p.setDes(details.getDes());
         
-        if (details.getVariants() != null) {
+        /*if (details.getVariants() != null) {
             p.getVariants().clear(); 
             for (ProductVariant v : details.getVariants()) {
                 v.setProduct(p);
                 p.getVariants().add(v);
             }
-        }
+        }*/
+       if (details.getVariants() != null) {
+        for (ProductVariant incomingV : details.getVariants()) {
+            ProductVariant existingV = p.getVariants().stream()
+                    .filter(v -> v.getSize() != null && v.getSize().equalsIgnoreCase(incomingV.getSize()))
+                    .findFirst()
+                    .orElse(null);                    
+            if (existingV != null) {
+                int newStock = existingV.getStock() + incomingV.getStock();
+                incomingV.setStock(newStock);
+            } 
+            }
+            p.getVariants().clear(); 
+            for (ProductVariant v : details.getVariants()) {
+                v.setProduct(p);
+                p.getVariants().add(v);
+            }
+        } 
 
         if (details.getCategory() != null && details.getCategory().getCategoryId() != null) {
             Category cat = categoryRepository.findById(details.getCategory().getCategoryId())

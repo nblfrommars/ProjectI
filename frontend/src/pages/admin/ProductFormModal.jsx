@@ -161,12 +161,12 @@ export default function ProductFormModal({
         </div>
 
         <div className="variants-section">
-          <label>Quản lý kho hàng (Số lượng tồn)</label>
+          <label>Quản lý kho hàng</label>
           <table className="variant-table">
             <thead>
               <tr>
                 <th>Size</th>
-                <th>Số lượng trong kho</th>
+                <th>Số lượng thêm vào kho</th>
               </tr>
             </thead>
             <tbody>
@@ -176,7 +176,6 @@ export default function ProductFormModal({
                   <td>
                     <input
                       type="number"
-                      min="0"
                       value={v.stock}
                       onChange={(e) => handleStockChange(index, e.target.value)}
                     />
