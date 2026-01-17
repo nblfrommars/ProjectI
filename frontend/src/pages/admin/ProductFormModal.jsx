@@ -35,7 +35,12 @@ export default function ProductFormModal({
 
   const handleStockChange = (index, value) => {
     const updatedVariants = [...form.variants];
-    updatedVariants[index].stock = parseInt(value) || 0;
+    if (value === "" || value === "-") {
+      updatedVariants[index].stock = value;
+    } else {
+      const numValue = parseInt(value);
+      updatedVariants[index].stock = isNaN(numValue) ? 0 : numValue;
+    }
     setForm({ ...form, variants: updatedVariants });
   };
 
@@ -84,7 +89,10 @@ export default function ProductFormModal({
         des: form.des,
         imageUrl: form.imageUrl,
         category: { categoryId: finalCategoryId },
-        variants: form.variants,
+        variants: form.variants.map((v) => ({
+          ...v,
+          stock: parseInt(v.stock) || 0,
+        })),
       };
 
       onSave(productObject, form.image);
